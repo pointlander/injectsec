@@ -11,7 +11,8 @@ import (
 type GRU struct {
 	*Model
 	learner, inference *CharRNN
-	solver             *G.RMSPropSolver
+	attack, nattack    *CharRNN
+	solver             G.Solver
 	steps              int
 }
 
@@ -37,6 +38,17 @@ func NewGRU(rnd *rand.Rand) *GRU {
 		panic(err)
 	}
 
+	attack := NewCharRNN(gru, vocabulary)
+	err = attack.ModeLearnLabel(steps, 0)
+	if err != nil {
+		panic(err)
+	}
+	nattack := NewCharRNN(gru, vocabulary)
+	err = nattack.ModeLearnLabel(steps, 1)
+	if err != nil {
+		panic(err)
+	}
+
 	learnrate := 0.01
 	l2reg := 0.000001
 	clipVal := 5.0
@@ -46,6 +58,8 @@ func NewGRU(rnd *rand.Rand) *GRU {
 		Model:     gru,
 		learner:   learner,
 		inference: inference,
+		attack:    attack,
+		nattack:   nattack,
 		solver:    solver,
 		steps:     steps,
 	}
@@ -61,7 +75,12 @@ func (g *GRU) Train(input []byte, attack bool) float32 {
 	for i := 0; i < g.steps-length; i++ {
 		data = append(data, ' ')
 	}
-	cost, _, err := g.learner.Learn(data, attack, 0, g.solver)
+	label := g.attack
+	if !attack {
+		label = g.nattack
+	}
+	//cost, _, err := g.learner.Learn(data, attack, 0, g.solver)
+	cost, _, err := label.Learn(data, attack, 0, g.solver)
 	if err != nil {
 		panic(fmt.Sprintf("%+v", err))
 	}

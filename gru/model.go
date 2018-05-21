@@ -26,7 +26,7 @@ type contextualError interface {
 type layer struct {
 	wf *tensor.Dense
 	uf *tensor.Dense
-	br *tensor.Dense
+	bf *tensor.Dense
 
 	wh *tensor.Dense
 	uh *tensor.Dense
@@ -39,6 +39,7 @@ type layer struct {
 type Model struct {
 	layers []*layer
 	we     *tensor.Dense
+	be     *tensor.Dense
 	wo     *tensor.Dense
 	bo     *tensor.Dense
 
@@ -65,6 +66,7 @@ func NewModel(rnd *rand.Rand, inputSize, embeddingSize, outputSize int, layerSiz
 	}
 	model.we = tensor.New(tensor.WithShape(embeddingSize, inputSize),
 		tensor.WithBacking(gaussian32(embeddingSize, inputSize)))
+	model.be = tensor.New(tensor.Of(tensor.Float32), tensor.WithShape(embeddingSize))
 
 	previous := embeddingSize
 	for _, size := range layerSizes {
@@ -75,7 +77,7 @@ func NewModel(rnd *rand.Rand, inputSize, embeddingSize, outputSize int, layerSiz
 			tensor.WithBacking(gaussian32(size, previous)))
 		layer.uf = tensor.New(tensor.WithShape(size, size),
 			tensor.WithBacking(gaussian32(size, size)))
-		layer.br = tensor.New(tensor.Of(tensor.Float32), tensor.WithShape(size))
+		layer.bf = tensor.New(tensor.Of(tensor.Float32), tensor.WithShape(size))
 
 		layer.wh = tensor.New(tensor.WithShape(size, previous),
 			tensor.WithBacking(gaussian32(size, previous)))
@@ -98,7 +100,7 @@ func NewModel(rnd *rand.Rand, inputSize, embeddingSize, outputSize int, layerSiz
 type gru struct {
 	wf *G.Node
 	uf *G.Node
-	br *G.Node
+	bf *G.Node
 
 	wh *G.Node
 	uh *G.Node
@@ -110,7 +112,7 @@ type gru struct {
 func (l *layer) NewGRULayer(g *G.ExprGraph, name string) *gru {
 	wf := G.NodeFromAny(g, l.wf, G.WithName("wf_"+name))
 	uf := G.NodeFromAny(g, l.uf, G.WithName("uf_"+name))
-	br := G.NodeFromAny(g, l.br, G.WithName("br_"+name))
+	bf := G.NodeFromAny(g, l.bf, G.WithName("bf_"+name))
 
 	wh := G.NodeFromAny(g, l.wh, G.WithName("wh_"+name))
 	uh := G.NodeFromAny(g, l.uh, G.WithName("uh_"+name))
@@ -120,7 +122,7 @@ func (l *layer) NewGRULayer(g *G.ExprGraph, name string) *gru {
 	return &gru{
 		wf:   wf,
 		uf:   uf,
-		br:   br,
+		bf:   bf,
 		wh:   wh,
 		uh:   uh,
 		bh:   bh,
@@ -131,7 +133,7 @@ func (l *layer) NewGRULayer(g *G.ExprGraph, name string) *gru {
 func (g *gru) fwd(input, previous *G.Node) *G.Node {
 	x := G.Must(G.Mul(g.wf, input))
 	y := G.Must(G.Mul(g.uf, previous))
-	f := G.Must(G.Sigmoid(G.Must(G.Add(G.Must(G.Add(x, y)), g.br))))
+	f := G.Must(G.Sigmoid(G.Must(G.Add(G.Must(G.Add(x, y)), g.bf))))
 
 	x = G.Must(G.Mul(g.wh, input))
 	y = G.Must(G.Mul(g.uh, G.Must(G.HadamardProd(f, previous))))
@@ -157,6 +159,7 @@ type CharRNN struct {
 
 	g       *G.ExprGraph
 	we      *G.Node
+	be      *G.Node
 	wo      *G.Node
 	bo      *G.Node
 	hiddens G.Nodes
@@ -185,6 +188,7 @@ func NewCharRNN(model *Model, vocabulary *Vocabulary) *CharRNN {
 		hiddens = append(hiddens, hidden)
 	}
 	we := G.NodeFromAny(g, model.we, G.WithName("we"))
+	be := G.NodeFromAny(g, model.be, G.WithName("be"))
 	wo := G.NodeFromAny(g, model.wo, G.WithName("wo"))
 	bo := G.NodeFromAny(g, model.bo, G.WithName("bo"))
 	return &CharRNN{
@@ -193,6 +197,7 @@ func NewCharRNN(model *Model, vocabulary *Vocabulary) *CharRNN {
 		Vocabulary: vocabulary,
 		g:          g,
 		we:         we,
+		be:         be,
 		wo:         wo,
 		bo:         bo,
 		hiddens:    hiddens,
@@ -204,7 +209,7 @@ func (r *CharRNN) learnables() (value G.Nodes) {
 		nodes := G.Nodes{
 			l.wf,
 			l.uf,
-			l.br,
+			l.bf,
 			l.wh,
 			l.uh,
 			l.bh,
@@ -213,6 +218,7 @@ func (r *CharRNN) learnables() (value G.Nodes) {
 	}
 
 	value = append(value, r.we)
+	value = append(value, r.be)
 	value = append(value, r.wo)
 	value = append(value, r.bo)
 
@@ -231,7 +237,7 @@ func (r *CharRNN) fwd(previous *gruOut) (inputTensor *tensor.Dense, retVal *gruO
 		if i == 0 {
 			inputTensor = tensor.New(tensor.Of(tensor.Float32), tensor.WithShape(r.inputSize))
 			input := G.NewVector(r.g, tensor.Float32, G.WithShape(r.inputSize), G.WithValue(inputTensor))
-			inputVector = G.Must(G.Mul(r.we, input))
+			inputVector = G.Must(G.Add(G.Must(G.Mul(r.we, input)), r.be))
 		} else {
 			inputVector = hiddens[i-1]
 		}
@@ -247,6 +253,8 @@ func (r *CharRNN) fwd(previous *gruOut) (inputTensor *tensor.Dense, retVal *gruO
 			ioutil.WriteFile("err.dot", []byte(lastHidden.RestrictedToDot(3, 10)), 0644)
 			panic(fmt.Sprintf("ERROR: %v", err))
 		}
+	} else {
+		panic(err)
 	}
 
 	var probs *G.Node
@@ -334,25 +342,70 @@ func (r *CharRNN) ModeLearn(steps int) (err error) {
 	return
 }
 
+// ModeLearnLabel puts the CharRNN into a learning mode
+func (r *CharRNN) ModeLearnLabel(steps, label int) (err error) {
+	inputs := make([]*tensor.Dense, steps-1)
+	previous := make([]*gruOut, steps-1)
+	var cost, perplexity *G.Node
+
+	for i := 0; i < steps-1; i++ {
+		var loss, perp *G.Node
+
+		var prev *gruOut
+		if i > 0 {
+			prev = previous[i-1]
+		}
+		inputs[i], previous[i], err = r.fwd(prev)
+		if err != nil {
+			return
+		}
+
+		logprob := G.Must(G.Neg(G.Must(G.Log(previous[i].probabilities))))
+		loss = G.Must(G.Slice(logprob, G.S(label)))
+		log2prob := G.Must(G.Neg(G.Must(G.Log2(previous[i].probabilities))))
+		perp = G.Must(G.Slice(log2prob, G.S(label)))
+
+		if cost == nil {
+			cost = loss
+		} else {
+			cost = G.Must(G.Add(cost, loss))
+		}
+		G.WithName("Cost")(cost)
+
+		if perplexity == nil {
+			perplexity = perp
+		} else {
+			perplexity = G.Must(G.Add(perplexity, perp))
+		}
+	}
+
+	r.steps = steps
+	r.inputs = inputs
+	r.previous = previous
+	r.cost = cost
+	r.perplexity = perplexity
+
+	_, err = G.Grad(cost, r.learnables()...)
+	if err != nil {
+		return
+	}
+
+	r.machine = G.NewTapeMachine(r.g, G.BindDualValues(r.learnables()...))
+	return
+}
+
 // ModeInference puts the CharRNN into inference mode
 func (r *CharRNN) ModeInference() (err error) {
 	inputs := make([]*tensor.Dense, 1)
-	outputs := make([]*tensor.Dense, 1)
 	previous := make([]*gruOut, 1)
 
 	inputs[0], previous[0], err = r.fwd(nil)
 	if err != nil {
 		return
 	}
-	logprob := G.Must(G.Neg(G.Must(G.Log(previous[0].probabilities))))
-	outputs[0] = tensor.New(tensor.Of(tensor.Float32), tensor.WithShape(r.outputSize))
-	output := G.NewVector(r.g, tensor.Float32, G.WithShape(r.outputSize), G.WithValue(outputs[0]))
-	cost := G.Must(G.Mul(logprob, output))
 
 	r.inputs = inputs
-	r.outputs = outputs
 	r.previous = previous
-	r.cost = cost
 	r.machine = G.NewTapeMachine(r.g)
 	return
 }
@@ -363,7 +416,6 @@ func (r *CharRNN) IsAttack(input []rune) bool {
 	for i := range input {
 		r.inputs[0].Zero()
 		r.inputs[0].SetF32(r.Index[input[i]], 1.0)
-		r.outputs[0].Zero()
 		err := r.machine.RunAll()
 		if err != nil {
 			panic(err)
@@ -374,25 +426,14 @@ func (r *CharRNN) IsAttack(input []rune) bool {
 
 	value := r.previous[0].probabilities.Value()
 	if t, ok := value.(tensor.Tensor); ok {
-		/*attack, err := t.At(0)
+		max, err := tensor.Argmax(t, -1)
 		if err != nil {
 			panic(err)
 		}
-		nattack, err := t.At(1)
-		if err != nil {
-			panic(err)
+		if !max.IsScalar() {
+			panic("expected scalar index")
 		}
-		if attack.(float32) < nattack.(float32) {
-			return true
-		}*/
-		indT, err := tensor.Argmax(t, -1)
-		if err != nil {
-			panic(err)
-		}
-		if !indT.IsScalar() {
-			panic("Expected scalar index")
-		}
-		if x := indT.ScalarValue().(int); x == 0 {
+		if x := max.ScalarValue().(int); x == 0 {
 			return true
 		}
 	} else {
@@ -516,11 +557,13 @@ func (r *CharRNN) Learn(sentence []rune, attack bool, iter int, solver G.Solver)
 
 			r.inputs[j].Zero()
 			r.inputs[j].SetF32(r.Index[source], 1.0)
-			r.outputs[j].Zero()
-			if !attack {
-				r.outputs[j].SetF32(0, 1.0)
-			} else {
-				r.outputs[j].SetF32(1, 1.0)
+			if r.outputs != nil {
+				r.outputs[j].Zero()
+				if !attack {
+					r.outputs[j].SetF32(0, 1.0)
+				} else {
+					r.outputs[j].SetF32(1, 1.0)
+				}
 			}
 		}
 
