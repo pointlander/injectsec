@@ -3,7 +3,6 @@ package gru
 import (
 	"fmt"
 	"io/ioutil"
-	"log"
 	"math"
 	"math/rand"
 	"strconv"
@@ -43,12 +42,13 @@ type Model struct {
 	wo     *tensor.Dense
 	bo     *tensor.Dense
 
+	inputs                               int
 	inputSize, embeddingSize, outputSize int
 	layerSizes                           []int
 }
 
 // NewModel creates a new GRU model
-func NewModel(rnd *rand.Rand, inputSize, embeddingSize, outputSize int, layerSizes []int) *Model {
+func NewModel(rnd *rand.Rand, inputs, inputSize, embeddingSize, outputSize int, layerSizes []int) *Model {
 	gaussian32 := func(s ...int) []float32 {
 		size := tensor.Shape(s).TotalSize()
 		weights, stdev := make([]float32, size), math.Sqrt(2/float64(s[len(s)-1]))
@@ -59,6 +59,7 @@ func NewModel(rnd *rand.Rand, inputSize, embeddingSize, outputSize int, layerSiz
 	}
 
 	model := &Model{
+		inputs:        inputs,
 		inputSize:     inputSize,
 		embeddingSize: embeddingSize,
 		outputSize:    outputSize,
@@ -68,7 +69,7 @@ func NewModel(rnd *rand.Rand, inputSize, embeddingSize, outputSize int, layerSiz
 		tensor.WithBacking(gaussian32(embeddingSize, inputSize)))
 	model.be = tensor.New(tensor.Of(tensor.Float32), tensor.WithShape(embeddingSize))
 
-	previous := embeddingSize
+	previous := inputs * embeddingSize
 	for _, size := range layerSizes {
 		layer := &layer{}
 		model.layers = append(model.layers, layer)
@@ -165,7 +166,7 @@ type CharRNN struct {
 	hiddens G.Nodes
 
 	steps            int
-	inputs           []*tensor.Dense
+	inputs           [][]*tensor.Dense
 	outputs          []*tensor.Dense
 	previous         []*gruOut
 	cost, perplexity *G.Node
@@ -225,7 +226,7 @@ func (r *CharRNN) learnables() (value G.Nodes) {
 	return
 }
 
-func (r *CharRNN) fwd(previous *gruOut) (inputTensor *tensor.Dense, retVal *gruOut, err error) {
+func (r *CharRNN) fwd(previous *gruOut) (inputs []*tensor.Dense, retVal *gruOut, err error) {
 	previousHiddens := r.hiddens
 	if previous != nil {
 		previousHiddens = previous.hiddens
@@ -235,9 +236,16 @@ func (r *CharRNN) fwd(previous *gruOut) (inputTensor *tensor.Dense, retVal *gruO
 	for i, v := range r.layers {
 		var inputVector *G.Node
 		if i == 0 {
-			inputTensor = tensor.New(tensor.Of(tensor.Float32), tensor.WithShape(r.inputSize))
-			input := G.NewVector(r.g, tensor.Float32, G.WithShape(r.inputSize), G.WithValue(inputTensor))
-			inputVector = G.Must(G.Add(G.Must(G.Mul(r.we, input)), r.be))
+			inputs = make([]*tensor.Dense, r.Model.inputs)
+			for j := range inputs {
+				inputs[j] = tensor.New(tensor.Of(tensor.Float32), tensor.WithShape(r.inputSize))
+				input := G.NewVector(r.g, tensor.Float32, G.WithShape(r.inputSize), G.WithValue(inputs[j]))
+				if inputVector == nil {
+					inputVector = G.Must(G.Add(G.Must(G.Mul(r.we, input)), r.be))
+				} else {
+					inputVector = G.Must(G.Concat(0, inputVector, G.Must(G.Add(G.Must(G.Mul(r.we, input)), r.be))))
+				}
+			}
 		} else {
 			inputVector = hiddens[i-1]
 		}
@@ -288,10 +296,14 @@ func (r *CharRNN) reset() {
 
 // ModeLearn puts the CharRNN into a learning mode
 func (r *CharRNN) ModeLearn(steps int) (err error) {
-	inputs := make([]*tensor.Dense, steps-1)
+	inputs := make([][]*tensor.Dense, r.Model.inputs)
 	outputs := make([]*tensor.Dense, steps-1)
 	previous := make([]*gruOut, steps-1)
 	var cost, perplexity *G.Node
+
+	for i := range inputs {
+		inputs[i] = make([]*tensor.Dense, steps-1)
+	}
 
 	for i := 0; i < steps-1; i++ {
 		var loss, perp *G.Node
@@ -300,9 +312,13 @@ func (r *CharRNN) ModeLearn(steps int) (err error) {
 		if i > 0 {
 			prev = previous[i-1]
 		}
-		inputs[i], previous[i], err = r.fwd(prev)
+		var in []*tensor.Dense
+		in, previous[i], err = r.fwd(prev)
 		if err != nil {
 			return
+		}
+		for k, v := range in {
+			inputs[k][i] = v
 		}
 
 		logprob := G.Must(G.Neg(G.Must(G.Log(previous[i].probabilities))))
@@ -344,9 +360,13 @@ func (r *CharRNN) ModeLearn(steps int) (err error) {
 
 // ModeLearnLabel puts the CharRNN into a learning mode
 func (r *CharRNN) ModeLearnLabel(steps, label int) (err error) {
-	inputs := make([]*tensor.Dense, steps-1)
+	inputs := make([][]*tensor.Dense, r.Model.inputs)
 	previous := make([]*gruOut, steps-1)
 	var cost, perplexity *G.Node
+
+	for i := range inputs {
+		inputs[i] = make([]*tensor.Dense, steps-1)
+	}
 
 	for i := 0; i < steps-1; i++ {
 		var loss, perp *G.Node
@@ -355,9 +375,13 @@ func (r *CharRNN) ModeLearnLabel(steps, label int) (err error) {
 		if i > 0 {
 			prev = previous[i-1]
 		}
-		inputs[i], previous[i], err = r.fwd(prev)
+		var in []*tensor.Dense
+		in, previous[i], err = r.fwd(prev)
 		if err != nil {
 			return
+		}
+		for k, v := range in {
+			inputs[k][i] = v
 		}
 
 		logprob := G.Must(G.Neg(G.Must(G.Log(previous[i].probabilities))))
@@ -396,12 +420,20 @@ func (r *CharRNN) ModeLearnLabel(steps, label int) (err error) {
 
 // ModeInference puts the CharRNN into inference mode
 func (r *CharRNN) ModeInference() (err error) {
-	inputs := make([]*tensor.Dense, 1)
+	inputs := make([][]*tensor.Dense, r.Model.inputs)
 	previous := make([]*gruOut, 1)
 
-	inputs[0], previous[0], err = r.fwd(nil)
+	for i := range inputs {
+		inputs[i] = make([]*tensor.Dense, 1)
+	}
+
+	var in []*tensor.Dense
+	in, previous[0], err = r.fwd(nil)
 	if err != nil {
 		return
+	}
+	for k, v := range in {
+		inputs[k][0] = v
 	}
 
 	r.inputs = inputs
@@ -412,10 +444,15 @@ func (r *CharRNN) ModeInference() (err error) {
 
 // IsAttack determines if an input is an attack
 func (r *CharRNN) IsAttack(input []rune) bool {
+	end := len(input) - 1
 	r.reset()
 	for i := range input {
-		r.inputs[0].Zero()
-		r.inputs[0].SetF32(r.Index[input[i]], 1.0)
+		r.inputs[0][0].Zero()
+		r.inputs[0][0].SetF32(r.Index[input[i]], 1.0)
+		if len(r.inputs) > 1 {
+			r.inputs[1][0].Zero()
+			r.inputs[1][0].SetF32(r.Index[input[end-i]], 1.0)
+		}
 		err := r.machine.RunAll()
 		if err != nil {
 			panic(err)
@@ -443,123 +480,27 @@ func (r *CharRNN) IsAttack(input []rune) bool {
 	return false
 }
 
-// Predict genreates a string
-func (r *CharRNN) Predict() {
-	var sentence []rune
-	var err error
-
-	r.reset()
-	for {
-		var id int
-		if len(sentence) > 0 {
-			id = r.Index[sentence[len(sentence)-1]]
-		}
-		r.inputs[0].Zero()
-		r.inputs[0].SetF32(id, 1.0)
-
-		// f, _ := os.Create("log1.log")
-		// logger := log.New(f, "", 0)
-		// machine := NewLispMachine(g, ExecuteFwdOnly(), WithLogger(logger), WithWatchlist(), LogBothDir())
-		if err = r.machine.RunAll(); err != nil {
-			if ctxerr, ok := err.(contextualError); ok {
-				ioutil.WriteFile("FAIL1.dot", []byte(ctxerr.Node().RestrictedToDot(3, 3)), 0644)
-			}
-			log.Printf("ERROR1 while predicting with %v %+v", r.machine, err)
-		}
-
-		sampledID := sample(r.previous[0].probabilities.Value())
-		//fmt.Println(r.previous[0].probs.Value())
-		var char rune // hur hur varchar
-		if char = r.List[sampledID]; char == END {
-			break
-		}
-
-		if len(sentence) > maxCharGen {
-			break
-		}
-
-		sentence = append(sentence, char)
-		r.feedback(0)
-		r.machine.Reset()
-	}
-
-	var sentence2 []rune
-	r.reset()
-	for {
-		var id int
-		if len(sentence2) > 0 {
-			id = r.Index[sentence2[len(sentence2)-1]]
-		}
-		r.inputs[0].Zero()
-		r.inputs[0].SetF32(id, 1.0)
-
-		// f, _ := os.Create("log2.log")
-		// logger := log.New(f, "", 0)
-		// machine := NewLispMachine(g, ExecuteFwdOnly(), WithLogger(logger), WithWatchlist(), LogBothDir())
-		if err = r.machine.RunAll(); err != nil {
-			if ctxerr, ok := err.(contextualError); ok {
-				log.Printf("Instruction ID %v", ctxerr.InstructionID())
-				ioutil.WriteFile("FAIL2.dot", []byte(ctxerr.Node().RestrictedToDot(3, 3)), 0644)
-			}
-			log.Printf("ERROR2 while predicting with %v: %+v", r.machine, err)
-		}
-
-		sampledID := maxSample(r.previous[0].probabilities.Value())
-
-		var char rune // hur hur varchar
-		if char = r.List[sampledID]; char == END {
-			break
-		}
-
-		if len(sentence2) > maxCharGen {
-			break
-		}
-
-		sentence2 = append(sentence2, char)
-		r.feedback(0)
-		r.machine.Reset()
-	}
-
-	fmt.Printf("Sampled: %q; \nArgMax: %q\n", string(sentence), string(sentence2))
-}
-
-// Cost computes the cost of the input
-func (r *CharRNN) Cost(input []byte) float32 {
-	var cost float32
-	r.reset()
-	for i := range input[:len(input)-1] {
-		r.inputs[0].Zero()
-		r.inputs[0].SetF32(int(input[i]), 1.0)
-		r.outputs[0].Zero()
-		r.outputs[0].SetF32(int(input[i+1]), 1.0)
-		err := r.machine.RunAll()
-		if err != nil {
-			panic(err)
-		}
-		if cv, ok := r.cost.Value().(G.Scalar); ok {
-			cost += cv.Data().(float32)
-		}
-		r.feedback(0)
-		r.machine.Reset()
-	}
-	return cost
-}
-
 // Learn learns strings
 func (r *CharRNN) Learn(sentence []rune, attack bool, iter int, solver G.Solver) (retCost, retPerp []float64, err error) {
 	n := len(sentence)
+	end := n - 1
 
 	r.reset()
 	steps := r.steps - 1
 	for x := 0; x < n-steps; x++ {
 		for j := 0; j < steps; j++ {
-			source := sentence[x+j]
+			index := x + j
+			source, rsource := sentence[index], sentence[end-index]
 
-			r.inputs[j].Zero()
-			r.inputs[j].SetF32(r.Index[source], 1.0)
+			r.inputs[0][j].Zero()
+			r.inputs[0][j].SetF32(r.Index[source], 1.0)
+			if len(r.inputs) > 1 {
+				r.inputs[1][j].Zero()
+				r.inputs[1][j].SetF32(r.Index[rsource], 1.0)
+			}
 			if r.outputs != nil {
 				r.outputs[j].Zero()
-				if !attack {
+				if attack {
 					r.outputs[j].SetF32(0, 1.0)
 				} else {
 					r.outputs[j].SetF32(1, 1.0)

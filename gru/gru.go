@@ -25,7 +25,7 @@ func NewGRU(rnd *rand.Rand) *GRU {
 	embeddingSize := 10
 	outputSize := 2
 	hiddenSizes := []int{5}
-	gru := NewModel(rnd, inputSize, embeddingSize, outputSize, hiddenSizes)
+	gru := NewModel(rnd, 2, inputSize, embeddingSize, outputSize, hiddenSizes)
 
 	learner := NewCharRNN(gru, vocabulary)
 	err := learner.ModeLearn(steps)
@@ -75,12 +75,12 @@ func (g *GRU) Train(input []byte, attack bool) float32 {
 	for i := 0; i < g.steps-length; i++ {
 		data = append(data, ' ')
 	}
-	label := g.attack
+	/*label := g.attack
 	if !attack {
 		label = g.nattack
-	}
-	//cost, _, err := g.learner.Learn(data, attack, 0, g.solver)
-	cost, _, err := label.Learn(data, attack, 0, g.solver)
+	}*/
+	cost, _, err := g.learner.Learn(data, attack, 0, g.solver)
+	//cost, _, err := label.Learn(data, attack, 0, g.solver)
 	if err != nil {
 		panic(fmt.Sprintf("%+v", err))
 	}
