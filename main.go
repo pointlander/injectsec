@@ -6,17 +6,23 @@ package main
 
 import (
 	"bufio"
+	"flag"
 	"fmt"
 	"math/rand"
 	"os"
+	"sort"
 	"strings"
-	"unicode"
 
 	"github.com/pointlander/injectsec/gru"
 )
 
 var (
 	rnd *rand.Rand
+	// FuzzFiles are the files to train on
+	FuzzFiles = []string{
+		"./data/Generic-BlindSQLi.fuzzdb.txt",
+		"./data/Generic-SQLi.txt",
+	}
 )
 
 // Example is a training example
@@ -25,37 +31,30 @@ type Example struct {
 	Attack bool
 }
 
-// ToMixed returns a mixed case string
-func ToMixed(a string) string {
-	b := strings.Builder{}
-	b.Grow(len(a))
-	for _, v := range a {
-		switch rnd.Intn(8) {
-		case 0:
-			v = unicode.ToLower(v)
-		case 1:
-			v = unicode.ToUpper(v)
-		}
-		b.WriteRune(v)
-	}
-	return b.String()
-}
-
 // Mutate randomly mutates a string
 func Mutate(a string) string {
-	b := []byte(a)
-	b[rnd.Intn(len(b))] = byte(rnd.Intn(255)) + 1
+	b := []rune(a)
+	switch rnd.Intn(4) {
+	case 0:
+		prefix := rune(rnd.Intn(255)) + 1
+		b = append([]rune{prefix}, b...)
+	case 1:
+		suffix := rune(rnd.Intn(255)) + 1
+		b = append(b, suffix)
+	case 2:
+		prefix := rune(rnd.Intn(255)) + 1
+		suffix := rune(rnd.Intn(255)) + 1
+		b = append([]rune{prefix}, b...)
+		b = append(b, suffix)
+	case 3:
+		b[rnd.Intn(len(b))] = rune(rnd.Intn(255)) + 1
+	}
 	return string(b)
 }
 
 func generateTrainingData() []Example {
-	files := []string{
-		"./data/Generic-BlindSQLi.fuzzdb.txt",
-		"./data/Generic-SQLi.txt",
-	}
-
 	data := make([]Example, 0)
-	for _, file := range files {
+	for _, file := range FuzzFiles {
 		in, err := os.Open(file)
 		if err != nil {
 			panic(err)
@@ -73,14 +72,9 @@ func generateTrainingData() []Example {
 			if strings.HasPrefix(line, "#") {
 				continue
 			}
-			data = append(data, Example{[]byte(line), true})
 			data = append(data, Example{[]byte(strings.ToLower(line)), true})
-			data = append(data, Example{[]byte(strings.ToUpper(line)), true})
-			for i := 0; i < 10; i++ {
-				data = append(data, Example{[]byte(ToMixed(line)), true})
-			}
-			for i := 0; i < 10; i++ {
-				data = append(data, Example{[]byte(Mutate(line)), true})
+			for i := 0; i < 64; i++ {
+				data = append(data, Example{[]byte(strings.ToLower(Mutate(line))), true})
 			}
 		}
 	}
@@ -91,7 +85,7 @@ func generateTrainingData() []Example {
 		for j := 0; j < size; j++ {
 			example += string(rune(int('a') + rnd.Intn(int('z'-'a'))))
 		}
-		data = append(data, Example{[]byte(example), false})
+		data = append(data, Example{[]byte(strings.ToLower(example)), false})
 	}
 
 	length = len(data)
@@ -103,7 +97,62 @@ func generateTrainingData() []Example {
 	return data
 }
 
+func printChunks() {
+	chunks := make(map[string]int, 0)
+	for _, file := range FuzzFiles {
+		in, err := os.Open(file)
+		if err != nil {
+			panic(err)
+		}
+		reader := bufio.NewReader(in)
+		line, err := reader.ReadString('\n')
+		for err == nil {
+			line = strings.ToLower(strings.TrimSuffix(line, "\n"))
+			symbols, buffer := []rune(line), make([]rune, 0, 32)
+			for _, v := range symbols {
+				if v >= 'a' && v <= 'z' {
+					buffer = append(buffer, v)
+				} else if len(buffer) > 1 {
+					chunks[string(buffer)]++
+					buffer = buffer[:0]
+				} else {
+					buffer = buffer[:0]
+				}
+			}
+			line, err = reader.ReadString('\n')
+		}
+	}
+	type Chunk struct {
+		Chunk string
+		Count int
+	}
+	ordered, i := make([]Chunk, len(chunks)), 0
+	for k, v := range chunks {
+		ordered[i] = Chunk{
+			Chunk: k,
+			Count: v,
+		}
+		i++
+	}
+	sort.Slice(ordered, func(i, j int) bool {
+		return ordered[i].Count > ordered[j].Count
+	})
+	for _, v := range ordered {
+		fmt.Println(v)
+	}
+	fmt.Println(len(chunks))
+}
+
+var chunks = flag.Bool("chunks", false, "generate chunks")
+
 func main() {
+	flag.Parse()
+
+	if *chunks {
+		printChunks()
+		return
+	}
+
 	rnd = rand.New(rand.NewSource(1))
 	data := generateTrainingData()
 	fmt.Println(len(data))
@@ -113,7 +162,7 @@ func main() {
 
 	networkRnd := rand.New(rand.NewSource(1))
 	network := gru.NewGRU(networkRnd)
-	for i := 0; i < 10000; i++ {
+	for i := 0; i < 40000; i++ {
 		example := train[rnd.Intn(len(train))]
 		cost := network.Train(example.Data, example.Attack)
 		if i%100 == 0 {
@@ -127,6 +176,8 @@ func main() {
 		attack := network.Test(example.Data)
 		if example.Attack == attack {
 			correct++
+		} else {
+			fmt.Println(string(example.Data), example.Attack, attack)
 		}
 		if example.Attack {
 			attacks++

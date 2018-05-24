@@ -156,8 +156,6 @@ type CharRNN struct {
 	*Model
 	layers []*gru
 
-	*Vocabulary
-
 	g       *G.ExprGraph
 	we      *G.Node
 	be      *G.Node
@@ -174,7 +172,7 @@ type CharRNN struct {
 }
 
 // NewCharRNN create a new GRU for characters as inputs
-func NewCharRNN(model *Model, vocabulary *Vocabulary) *CharRNN {
+func NewCharRNN(model *Model) *CharRNN {
 	g := G.NewGraph()
 	var layers []*gru
 	var hiddens G.Nodes
@@ -193,15 +191,14 @@ func NewCharRNN(model *Model, vocabulary *Vocabulary) *CharRNN {
 	wo := G.NodeFromAny(g, model.wo, G.WithName("wo"))
 	bo := G.NodeFromAny(g, model.bo, G.WithName("bo"))
 	return &CharRNN{
-		Model:      model,
-		layers:     layers,
-		Vocabulary: vocabulary,
-		g:          g,
-		we:         we,
-		be:         be,
-		wo:         wo,
-		bo:         bo,
-		hiddens:    hiddens,
+		Model:   model,
+		layers:  layers,
+		g:       g,
+		we:      we,
+		be:      be,
+		wo:      wo,
+		bo:      bo,
+		hiddens: hiddens,
 	}
 }
 
@@ -443,15 +440,15 @@ func (r *CharRNN) ModeInference() (err error) {
 }
 
 // IsAttack determines if an input is an attack
-func (r *CharRNN) IsAttack(input []rune) bool {
+func (r *CharRNN) IsAttack(input []int) bool {
 	end := len(input) - 1
 	r.reset()
 	for i := range input {
 		r.inputs[0][0].Zero()
-		r.inputs[0][0].SetF32(r.Index[input[i]], 1.0)
+		r.inputs[0][0].SetF32(input[i], 1.0)
 		if len(r.inputs) > 1 {
 			r.inputs[1][0].Zero()
-			r.inputs[1][0].SetF32(r.Index[input[end-i]], 1.0)
+			r.inputs[1][0].SetF32(input[end-i], 1.0)
 		}
 		err := r.machine.RunAll()
 		if err != nil {
@@ -481,7 +478,7 @@ func (r *CharRNN) IsAttack(input []rune) bool {
 }
 
 // Learn learns strings
-func (r *CharRNN) Learn(sentence []rune, attack bool, iter int, solver G.Solver) (retCost, retPerp []float64, err error) {
+func (r *CharRNN) Learn(sentence []int, attack bool, iter int, solver G.Solver) (retCost, retPerp []float64, err error) {
 	n := len(sentence)
 	end := n - 1
 
@@ -493,10 +490,10 @@ func (r *CharRNN) Learn(sentence []rune, attack bool, iter int, solver G.Solver)
 			source, rsource := sentence[index], sentence[end-index]
 
 			r.inputs[0][j].Zero()
-			r.inputs[0][j].SetF32(r.Index[source], 1.0)
+			r.inputs[0][j].SetF32(source, 1.0)
 			if len(r.inputs) > 1 {
 				r.inputs[1][j].Zero()
-				r.inputs[1][j].SetF32(r.Index[rsource], 1.0)
+				r.inputs[1][j].SetF32(rsource, 1.0)
 			}
 			if r.outputs != nil {
 				r.outputs[j].Zero()
