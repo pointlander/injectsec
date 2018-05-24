@@ -75,9 +75,10 @@ func init() {
 // GRU is a GRU based anomaly detection engine
 type GRU struct {
 	*Model
-	learner, inference *CharRNN
-	solver             G.Solver
-	steps              int
+	learner   []*CharRNN
+	inference *CharRNN
+	solver    G.Solver
+	steps     int
 }
 
 // NewGRU creates a new GRU anomaly detection engine
@@ -89,13 +90,17 @@ func NewGRU(rnd *rand.Rand) *GRU {
 	hiddenSizes := []int{5}
 	gru := NewModel(rnd, 2, inputSize, embeddingSize, outputSize, hiddenSizes)
 
-	learner := NewCharRNN(gru)
-	err := learner.ModeLearn(steps)
-	if err != nil {
-		panic(err)
+	learner := make([]*CharRNN, steps)
+	for i := range learner {
+		learner[i] = NewCharRNN(gru)
+		err := learner[i].ModeLearn(i + 1)
+		if err != nil {
+			panic(err)
+		}
 	}
+
 	inference := NewCharRNN(gru)
-	err = inference.ModeInference()
+	err := inference.ModeInference()
 	if err != nil {
 		panic(err)
 	}
@@ -114,7 +119,7 @@ func NewGRU(rnd *rand.Rand) *GRU {
 	}
 }
 
-func (g *GRU) convert(input []byte, pad bool) []int {
+func convert(input []byte) []int {
 	length, i := len(input), 0
 	data := make([]int, 0, length)
 conversion:
@@ -138,20 +143,18 @@ conversion:
 		data = append(data, int(input[i]))
 		i++
 	}
-	length = len(data)
-	if pad {
-		for i := 0; i < g.steps-length; i++ {
-			data = append(data, ' ')
-		}
-	}
 
 	return data
 }
 
 // Train trains the GRU
 func (g *GRU) Train(input []byte, attack bool) float32 {
-	data := g.convert(input, true)
-	cost, _, err := g.learner.Learn(data, attack, g.solver)
+	data := convert(input)
+	learner := g.learner[len(g.learner)-1]
+	if len(data) < len(g.learner) {
+		learner = g.learner[len(data)-1]
+	}
+	cost, _, err := learner.Learn(data, attack, g.solver)
 	if err != nil {
 		panic(fmt.Sprintf("%+v", err))
 	}
@@ -165,6 +168,6 @@ func (g *GRU) Train(input []byte, attack bool) float32 {
 
 // Test tests a string
 func (g *GRU) Test(input []byte) bool {
-	data := g.convert(input, false)
+	data := convert(input)
 	return g.inference.IsAttack(data)
 }
