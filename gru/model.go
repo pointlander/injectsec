@@ -163,12 +163,12 @@ type CharRNN struct {
 	bo      *G.Node
 	hiddens G.Nodes
 
-	steps            int
-	inputs           [][]*tensor.Dense
-	outputs          []*tensor.Dense
-	previous         []*gruOut
-	cost, perplexity *G.Node
-	machine          G.VM
+	steps    int
+	inputs   [][]*tensor.Dense
+	outputs  []*tensor.Dense
+	previous []*gruOut
+	cost     *G.Node
+	machine  G.VM
 }
 
 // NewCharRNN create a new GRU for characters as inputs
@@ -294,16 +294,16 @@ func (r *CharRNN) reset() {
 // ModeLearn puts the CharRNN into a learning mode
 func (r *CharRNN) ModeLearn(steps int) (err error) {
 	inputs := make([][]*tensor.Dense, r.Model.inputs)
-	outputs := make([]*tensor.Dense, steps-1)
-	previous := make([]*gruOut, steps-1)
-	var cost, perplexity *G.Node
+	outputs := make([]*tensor.Dense, steps)
+	previous := make([]*gruOut, steps)
+	var cost *G.Node
 
 	for i := range inputs {
-		inputs[i] = make([]*tensor.Dense, steps-1)
+		inputs[i] = make([]*tensor.Dense, steps)
 	}
 
-	for i := 0; i < steps-1; i++ {
-		var loss, perp *G.Node
+	for i := 0; i < steps; i++ {
+		var loss *G.Node
 
 		var prev *gruOut
 		if i > 0 {
@@ -322,8 +322,6 @@ func (r *CharRNN) ModeLearn(steps int) (err error) {
 		outputs[i] = tensor.New(tensor.Of(tensor.Float32), tensor.WithShape(r.outputSize))
 		output := G.NewVector(r.g, tensor.Float32, G.WithShape(r.outputSize), G.WithValue(outputs[i]))
 		loss = G.Must(G.Mul(logprob, output))
-		log2prob := G.Must(G.Neg(G.Must(G.Log2(previous[i].probabilities))))
-		perp = G.Must(G.Mul(log2prob, output))
 
 		if cost == nil {
 			cost = loss
@@ -331,12 +329,6 @@ func (r *CharRNN) ModeLearn(steps int) (err error) {
 			cost = G.Must(G.Add(cost, loss))
 		}
 		G.WithName("Cost")(cost)
-
-		if perplexity == nil {
-			perplexity = perp
-		} else {
-			perplexity = G.Must(G.Add(perplexity, perp))
-		}
 	}
 
 	r.steps = steps
@@ -344,67 +336,6 @@ func (r *CharRNN) ModeLearn(steps int) (err error) {
 	r.outputs = outputs
 	r.previous = previous
 	r.cost = cost
-	r.perplexity = perplexity
-
-	_, err = G.Grad(cost, r.learnables()...)
-	if err != nil {
-		return
-	}
-
-	r.machine = G.NewTapeMachine(r.g, G.BindDualValues(r.learnables()...))
-	return
-}
-
-// ModeLearnLabel puts the CharRNN into a learning mode
-func (r *CharRNN) ModeLearnLabel(steps, label int) (err error) {
-	inputs := make([][]*tensor.Dense, r.Model.inputs)
-	previous := make([]*gruOut, steps-1)
-	var cost, perplexity *G.Node
-
-	for i := range inputs {
-		inputs[i] = make([]*tensor.Dense, steps-1)
-	}
-
-	for i := 0; i < steps-1; i++ {
-		var loss, perp *G.Node
-
-		var prev *gruOut
-		if i > 0 {
-			prev = previous[i-1]
-		}
-		var in []*tensor.Dense
-		in, previous[i], err = r.fwd(prev)
-		if err != nil {
-			return
-		}
-		for k, v := range in {
-			inputs[k][i] = v
-		}
-
-		logprob := G.Must(G.Neg(G.Must(G.Log(previous[i].probabilities))))
-		loss = G.Must(G.Slice(logprob, G.S(label)))
-		log2prob := G.Must(G.Neg(G.Must(G.Log2(previous[i].probabilities))))
-		perp = G.Must(G.Slice(log2prob, G.S(label)))
-
-		if cost == nil {
-			cost = loss
-		} else {
-			cost = G.Must(G.Add(cost, loss))
-		}
-		G.WithName("Cost")(cost)
-
-		if perplexity == nil {
-			perplexity = perp
-		} else {
-			perplexity = G.Must(G.Add(perplexity, perp))
-		}
-	}
-
-	r.steps = steps
-	r.inputs = inputs
-	r.previous = previous
-	r.cost = cost
-	r.perplexity = perplexity
 
 	_, err = G.Grad(cost, r.learnables()...)
 	if err != nil {
@@ -478,16 +409,14 @@ func (r *CharRNN) IsAttack(input []int) bool {
 }
 
 // Learn learns strings
-func (r *CharRNN) Learn(sentence []int, attack bool, iter int, solver G.Solver) (retCost, retPerp []float64, err error) {
-	n := len(sentence)
-	end := n - 1
+func (r *CharRNN) Learn(data []int, attack bool, solver G.Solver) (retCost, retPerp []float64, err error) {
+	end := len(data) - 1
 
 	r.reset()
-	steps := r.steps - 1
-	for x := 0; x < n-steps; x++ {
-		for j := 0; j < steps; j++ {
-			index := x + j
-			source, rsource := sentence[index], sentence[end-index]
+	for i := range data[:len(data)-r.steps+1] {
+		for j := 0; j < r.steps; j++ {
+			index := i + j
+			source, rsource := data[index], data[end-index]
 
 			r.inputs[0][j].Zero()
 			r.inputs[0][j].SetF32(source, 1.0)
@@ -522,10 +451,6 @@ func (r *CharRNN) Learn(sentence []int, attack bool, iter int, solver G.Solver) 
 			return
 		}
 
-		if sv, ok := r.perplexity.Value().(G.Scalar); ok {
-			v := sv.Data().(float32)
-			retPerp = append(retPerp, math.Pow(2, float64(v)/(float64(n)-1)))
-		}
 		if cv, ok := r.cost.Value().(G.Scalar); ok {
 			retCost = append(retCost, float64(cv.Data().(float32)))
 		}

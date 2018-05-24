@@ -76,14 +76,13 @@ func init() {
 type GRU struct {
 	*Model
 	learner, inference *CharRNN
-	attack, nattack    *CharRNN
 	solver             G.Solver
 	steps              int
 }
 
 // NewGRU creates a new GRU anomaly detection engine
 func NewGRU(rnd *rand.Rand) *GRU {
-	steps := 4
+	steps := 3
 	inputSize := 256 + len(Chunks)
 	embeddingSize := 10
 	outputSize := 2
@@ -101,17 +100,6 @@ func NewGRU(rnd *rand.Rand) *GRU {
 		panic(err)
 	}
 
-	attack := NewCharRNN(gru)
-	err = attack.ModeLearnLabel(steps, 0)
-	if err != nil {
-		panic(err)
-	}
-	nattack := NewCharRNN(gru)
-	err = nattack.ModeLearnLabel(steps, 1)
-	if err != nil {
-		panic(err)
-	}
-
 	learnrate := 0.01
 	l2reg := 0.000001
 	clipVal := 5.0
@@ -121,8 +109,6 @@ func NewGRU(rnd *rand.Rand) *GRU {
 		Model:     gru,
 		learner:   learner,
 		inference: inference,
-		attack:    attack,
-		nattack:   nattack,
 		solver:    solver,
 		steps:     steps,
 	}
@@ -165,12 +151,7 @@ conversion:
 // Train trains the GRU
 func (g *GRU) Train(input []byte, attack bool) float32 {
 	data := g.convert(input, true)
-	/*label := g.attack
-	if !attack {
-		label = g.nattack
-	}*/
-	cost, _, err := g.learner.Learn(data, attack, 0, g.solver)
-	//cost, _, err := label.Learn(data, attack, 0, g.solver)
+	cost, _, err := g.learner.Learn(data, attack, g.solver)
 	if err != nil {
 		panic(fmt.Sprintf("%+v", err))
 	}
