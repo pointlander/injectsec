@@ -143,17 +143,34 @@ func printChunks() {
 	fmt.Println(len(chunks))
 }
 
-var chunks = flag.Bool("chunks", false, "generate chunks")
+var (
+	chunks = flag.Bool("chunks", false, "generate chunks")
+	data   = flag.Bool("data", false, "print training data")
+)
 
 func main() {
 	flag.Parse()
+	rnd = rand.New(rand.NewSource(1))
 
 	if *chunks {
 		printChunks()
 		return
 	}
 
-	rnd = rand.New(rand.NewSource(1))
+	if *data {
+		generators := TrainingDataGenerator(rnd)
+		for _, generator := range generators {
+			fmt.Println(generator.Form)
+			if generator.Make != nil {
+				for i := 0; i < 10; i++ {
+					fmt.Println(generator.Make())
+				}
+			}
+			fmt.Println()
+		}
+		return
+	}
+
 	data := generateTrainingData()
 	fmt.Println(len(data))
 
