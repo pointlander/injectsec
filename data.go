@@ -12,8 +12,9 @@ import (
 
 // Generator generates training data
 type Generator struct {
-	Form string
-	Make func() (sample string)
+	Form     string
+	Abstract bool
+	Make     func() (sample string)
 }
 
 // TrainingDataGenerator returns a data generator
@@ -128,7 +129,8 @@ func TrainingDataGenerator(rnd *rand.Rand) []Generator {
 			},
 		},
 		{
-			Form: "\";waitfor delay '0:0:__TIME__'--",
+			Form:     "\";waitfor delay '0:0:__TIME__'--",
+			Abstract: true,
 			Make: func() (sample string) {
 				sample += "\";waitfor"
 				sample += sampleSpaces()
@@ -145,7 +147,8 @@ func TrainingDataGenerator(rnd *rand.Rand) []Generator {
 			},
 		},
 		{
-			Form: "1) or pg_sleep(__TIME__)--",
+			Form:     "1) or pg_sleep(__TIME__)--",
+			Abstract: true,
 			Make: func() (sample string) {
 				sample += sampleNumber(1337)
 				sample += ")"
@@ -211,7 +214,8 @@ func TrainingDataGenerator(rnd *rand.Rand) []Generator {
 			},
 		},
 		{
-			Form: "\" or sleep(__TIME__)#",
+			Form:     "\" or sleep(__TIME__)#",
+			Abstract: true,
 			Make: func() (sample string) {
 				sample += "\""
 				sample += sampleSpaces()
@@ -224,7 +228,8 @@ func TrainingDataGenerator(rnd *rand.Rand) []Generator {
 			},
 		},
 		{
-			Form: "pg_sleep(__TIME__)--",
+			Form:     "pg_sleep(__TIME__)--",
+			Abstract: true,
 			Make: func() (sample string) {
 				sample += "pg_sleep("
 				sample += sampleNumber(1337)
@@ -236,7 +241,8 @@ func TrainingDataGenerator(rnd *rand.Rand) []Generator {
 			Form: "*(|(objectclass=*))",
 		},
 		{
-			Form: "declare @q nvarchar (200) 0x730065006c00650063 ...",
+			Form:     "declare @q nvarchar (200) 0x730065006c00650063 ...",
+			Abstract: true,
 			Make: func() (sample string) {
 				sample += "declare"
 				sample += sampleSpaces()
@@ -278,7 +284,8 @@ func TrainingDataGenerator(rnd *rand.Rand) []Generator {
 			},
 		},
 		{
-			Form: "1) or sleep(__TIME__)#",
+			Form:     "1) or sleep(__TIME__)#",
+			Abstract: true,
 			Make: func() (sample string) {
 				sample += sampleNumber(1337)
 				sample += ")"
@@ -505,7 +512,8 @@ func TrainingDataGenerator(rnd *rand.Rand) []Generator {
 			},
 		},
 		{
-			Form: ") or sleep(__TIME__)='",
+			Form:     ") or sleep(__TIME__)='",
+			Abstract: true,
 			Make: func() (sample string) {
 				sample += ")"
 				sample += sampleSpaces()
@@ -653,7 +661,8 @@ func TrainingDataGenerator(rnd *rand.Rand) []Generator {
 			},
 		},
 		{
-			Form: "));waitfor delay '0:0:__TIME__'--",
+			Form:     "));waitfor delay '0:0:__TIME__'--",
+			Abstract: true,
 			Make: func() (sample string) {
 				sample += "));waitfor"
 				sample += sampleSpaces()
@@ -690,7 +699,8 @@ func TrainingDataGenerator(rnd *rand.Rand) []Generator {
 			},
 		},
 		{
-			Form: "1;(load_file(char(47,101,116,99,47,112,97,115, ...",
+			Form:     "1;(load_file(char(47,101,116,99,47,112,97,115, ...",
+			Abstract: true,
 			Make: func() (sample string) {
 				sample += sampleNumber(256)
 				sample += ";(load_file(char("
@@ -716,7 +726,8 @@ func TrainingDataGenerator(rnd *rand.Rand) []Generator {
 			},
 		},
 		{
-			Form: "1 or sleep(__TIME__)#",
+			Form:     "1 or sleep(__TIME__)#",
+			Abstract: true,
 			Make: func() (sample string) {
 				sample += sampleNumber(1337)
 				sample += sampleSpaces()
@@ -820,7 +831,8 @@ func TrainingDataGenerator(rnd *rand.Rand) []Generator {
 			},
 		},
 		{
-			Form: "declare @s varchar (200) select @s = 0x73656c6 ...",
+			Form:     "declare @s varchar (200) select @s = 0x73656c6 ...",
+			Abstract: true,
 			Make: func() (sample string) {
 				sample += "declare"
 				sample += sampleSpaces()
@@ -885,7 +897,8 @@ func TrainingDataGenerator(rnd *rand.Rand) []Generator {
 			},
 		},
 		{
-			Form: "\" or pg_sleep(__TIME__)--",
+			Form:     "\" or pg_sleep(__TIME__)--",
+			Abstract: true,
 			Make: func() (sample string) {
 				sample += "\""
 				sample += sampleSpaces()
@@ -994,7 +1007,8 @@ func TrainingDataGenerator(rnd *rand.Rand) []Generator {
 			},
 		},
 		{
-			Form: "declare @s varchar(200) select @s = 0x77616974 ...",
+			Form:     "declare @s varchar(200) select @s = 0x77616974 ...",
+			Abstract: true,
 			Make: func() (sample string) {
 				sample += "declare"
 				sample += sampleSpaces()
@@ -1036,7 +1050,8 @@ func TrainingDataGenerator(rnd *rand.Rand) []Generator {
 			},
 		},
 		{
-			Form: "\"));waitfor delay '0:0:__TIME__'--",
+			Form:     "\"));waitfor delay '0:0:__TIME__'--",
+			Abstract: true,
 			Make: func() (sample string) {
 				sample += "\"));waitfor"
 				sample += sampleSpaces()
@@ -1200,7 +1215,8 @@ func TrainingDataGenerator(rnd *rand.Rand) []Generator {
 			},
 		},
 		{
-			Form: " and 1=( if((load_file(char(110,46,101,120,11 ...",
+			Form:     " and 1=( if((load_file(char(110,46,101,120,11 ...",
+			Abstract: true,
 			Make: func() (sample string) {
 				sample += sampleSpaces()
 				sample += sampleAnd()
@@ -1219,7 +1235,8 @@ func TrainingDataGenerator(rnd *rand.Rand) []Generator {
 			},
 		},
 		{
-			Form: "0x770061006900740066006F0072002000640065006C00 ...",
+			Form:     "0x770061006900740066006F0072002000640065006C00 ...",
+			Abstract: true,
 			Make: func() (sample string) {
 				sample += sampleHex(1337 * 1337)
 				return
@@ -1245,7 +1262,8 @@ func TrainingDataGenerator(rnd *rand.Rand) []Generator {
 			},
 		},
 		{
-			Form: "1)) or pg_sleep(__TIME__)--",
+			Form:     "1)) or pg_sleep(__TIME__)--",
+			Abstract: true,
 			Make: func() (sample string) {
 				sample += sampleNumber(1337)
 				sample += sampleSpaces()
@@ -1316,7 +1334,8 @@ func TrainingDataGenerator(rnd *rand.Rand) []Generator {
 			},
 		},
 		{
-			Form: "t'exec master..xp_cmdshell 'nslookup www.googl ...",
+			Form:     "t'exec master..xp_cmdshell 'nslookup www.googl ...",
+			Abstract: true,
 			Make: func() (sample string) {
 				sample += sampleName()
 				sample += "'exec"
@@ -1378,7 +1397,8 @@ func TrainingDataGenerator(rnd *rand.Rand) []Generator {
 			},
 		},
 		{
-			Form: " or pg_sleep(__TIME__)--",
+			Form:     " or pg_sleep(__TIME__)--",
+			Abstract: true,
 			Make: func() (sample string) {
 				sample += sampleSpaces()
 				sample += sampleOr()
@@ -1407,7 +1427,8 @@ func TrainingDataGenerator(rnd *rand.Rand) []Generator {
 			},
 		},
 		{
-			Form: "\") or sleep(__TIME__)=\"",
+			Form:     "\") or sleep(__TIME__)=\"",
+			Abstract: true,
 			Make: func() (sample string) {
 				sample += "\")"
 				sample += sampleSpaces()
@@ -1439,7 +1460,8 @@ func TrainingDataGenerator(rnd *rand.Rand) []Generator {
 			},
 		},
 		{
-			Form: "; begin declare @var varchar(8000) set @var=' ...",
+			Form:     "; begin declare @var varchar(8000) set @var=' ...",
+			Abstract: true,
 			Make: func() (sample string) {
 				sample += ";"
 				sample += sampleSpaces()
@@ -1484,7 +1506,8 @@ func TrainingDataGenerator(rnd *rand.Rand) []Generator {
 			},
 		},
 		{
-			Form: "0x77616974666F722064656C61792027303A303A313027 ...",
+			Form:     "0x77616974666F722064656C61792027303A303A313027 ...",
+			Abstract: true,
 			Make: func() (sample string) {
 				sample += sampleHex(1337 * 1337)
 				return
@@ -1502,7 +1525,8 @@ func TrainingDataGenerator(rnd *rand.Rand) []Generator {
 			},
 		},
 		{
-			Form: ") or pg_sleep(__TIME__)--",
+			Form:     ") or pg_sleep(__TIME__)--",
+			Abstract: true,
 			Make: func() (sample string) {
 				sample += ")"
 				sample += sampleSpaces()
@@ -1525,7 +1549,8 @@ func TrainingDataGenerator(rnd *rand.Rand) []Generator {
 			},
 		},
 		{
-			Form: " or sleep(__TIME__)#",
+			Form:     " or sleep(__TIME__)#",
+			Abstract: true,
 			Make: func() (sample string) {
 				sample += sampleSpaces()
 				sample += sampleOr()
@@ -1661,7 +1686,8 @@ func TrainingDataGenerator(rnd *rand.Rand) []Generator {
 			},
 		},
 		{
-			Form: " or sleep(__TIME__)='",
+			Form:     " or sleep(__TIME__)='",
+			Abstract: true,
 			Make: func() (sample string) {
 				sample += sampleSpaces()
 				sample += sampleOr()
@@ -1731,7 +1757,8 @@ func TrainingDataGenerator(rnd *rand.Rand) []Generator {
 			},
 		},
 		{
-			Form: "declare @s varchar (8000) select @s = 0x73656c ...",
+			Form:     "declare @s varchar (8000) select @s = 0x73656c ...",
+			Abstract: true,
 			Make: func() (sample string) {
 				sample += "declare"
 				sample += sampleSpaces()
@@ -1844,7 +1871,8 @@ func TrainingDataGenerator(rnd *rand.Rand) []Generator {
 			},
 		},
 		{
-			Form: ";waitfor delay '0:0:__TIME__'--",
+			Form:     ";waitfor delay '0:0:__TIME__'--",
+			Abstract: true,
 			Make: func() (sample string) {
 				sample += ";waitfor"
 				sample += sampleSpaces()
@@ -1948,7 +1976,8 @@ func TrainingDataGenerator(rnd *rand.Rand) []Generator {
 			},
 		},
 		{
-			Form: "\");waitfor delay '0:0:__TIME__'--",
+			Form:     "\");waitfor delay '0:0:__TIME__'--",
+			Abstract: true,
 			Make: func() (sample string) {
 				sample += "\");waitfor"
 				sample += sampleSpaces()
@@ -2056,7 +2085,8 @@ func TrainingDataGenerator(rnd *rand.Rand) []Generator {
 			},
 		},
 		{
-			Form: "\")) or sleep(__TIME__)=\"",
+			Form:     "\")) or sleep(__TIME__)=\"",
+			Abstract: true,
 			Make: func() (sample string) {
 				sample += "\"))"
 				sample += sampleSpaces()
@@ -2069,7 +2099,8 @@ func TrainingDataGenerator(rnd *rand.Rand) []Generator {
 			},
 		},
 		{
-			Form: "0x730065006c0065006300740020004000400076006500 ...",
+			Form:     "0x730065006c0065006300740020004000400076006500 ...",
+			Abstract: true,
 			Make: func() (sample string) {
 				sample += sampleSpaces()
 				sample += sampleHex(1337 * 1337)
@@ -2095,7 +2126,8 @@ func TrainingDataGenerator(rnd *rand.Rand) []Generator {
 			},
 		},
 		{
-			Form: "\") or pg_sleep(__TIME__)--",
+			Form:     "\") or pg_sleep(__TIME__)--",
+			Abstract: true,
 			Make: func() (sample string) {
 				sample += "\")"
 				sample += sampleSpaces()
@@ -2190,7 +2222,8 @@ func TrainingDataGenerator(rnd *rand.Rand) []Generator {
 			},
 		},
 		{
-			Form: "1 or pg_sleep(__TIME__)--",
+			Form:     "1 or pg_sleep(__TIME__)--",
+			Abstract: true,
 			Make: func() (sample string) {
 				sample += sampleNumber(1337)
 				sample += sampleSpaces()
@@ -2270,7 +2303,8 @@ func TrainingDataGenerator(rnd *rand.Rand) []Generator {
 			},
 		},
 		{
-			Form: ")) or pg_sleep(__TIME__)--",
+			Form:     ")) or pg_sleep(__TIME__)--",
+			Abstract: true,
 			Make: func() (sample string) {
 				sample += "))"
 				sample += sampleSpaces()
@@ -2338,7 +2372,8 @@ func TrainingDataGenerator(rnd *rand.Rand) []Generator {
 			},
 		},
 		{
-			Form: "declare @q nvarchar (200) select @q = 0x770061 ...",
+			Form:     "declare @q nvarchar (200) select @q = 0x770061 ...",
+			Abstract: true,
 			Make: func() (sample string) {
 				sample += "declare"
 				sample += sampleSpaces()
@@ -2501,7 +2536,8 @@ func TrainingDataGenerator(rnd *rand.Rand) []Generator {
 			},
 		},
 		{
-			Form: "1)) or sleep(__TIME__)#",
+			Form:     "1)) or sleep(__TIME__)#",
+			Abstract: true,
 			Make: func() (sample string) {
 				sample += sampleNumber(1337)
 				sample += "))"
@@ -2529,7 +2565,8 @@ func TrainingDataGenerator(rnd *rand.Rand) []Generator {
 			},
 		},
 		{
-			Form: " select name from syscolumns where id = (sele ...",
+			Form:     " select name from syscolumns where id = (sele ...",
+			Abstract: true,
 			Make: func() (sample string) {
 				sample += sampleSpaces()
 				sample += "select"
@@ -2594,7 +2631,8 @@ func TrainingDataGenerator(rnd *rand.Rand) []Generator {
 			},
 		},
 		{
-			Form: ");waitfor delay '0:0:__TIME__'--",
+			Form:     ");waitfor delay '0:0:__TIME__'--",
+			Abstract: true,
 			Make: func() (sample string) {
 				sample += ");waitfor"
 				sample += sampleSpaces()
@@ -2676,7 +2714,8 @@ func TrainingDataGenerator(rnd *rand.Rand) []Generator {
 			},
 		},
 		{
-			Form: ")) or sleep(__TIME__)='",
+			Form:     ")) or sleep(__TIME__)='",
+			Abstract: true,
 			Make: func() (sample string) {
 				sample += "))"
 				sample += sampleSpaces()
@@ -2731,7 +2770,8 @@ func TrainingDataGenerator(rnd *rand.Rand) []Generator {
 			},
 		},
 		{
-			Form: " union select * from users where login = char ...",
+			Form:     " union select * from users where login = char ...",
+			Abstract: true,
 			Make: func() (sample string) {
 				sample += sampleSpaces()
 				sample += "union"
@@ -2882,7 +2922,8 @@ func TrainingDataGenerator(rnd *rand.Rand) []Generator {
 			},
 		},
 		{
-			Form: "\")) or pg_sleep(__TIME__)--",
+			Form:     "\")) or pg_sleep(__TIME__)--",
+			Abstract: true,
 			Make: func() (sample string) {
 				sample += "\"))"
 				sample += sampleSpaces()
