@@ -3230,6 +3230,402 @@ func TrainingDataGenerator(rnd *rand.Rand) []Generator {
 				return
 			},
 		},
+		{
+			Form: "' or '1'='1'--",
+			Make: func() (sample string) {
+				sample += "'"
+				sample += sampleSpaces()
+				sample += sampleOr()
+				sample += sampleSpaces()
+				sample += "'"
+				number := sampleNumber(1337)
+				sample += number
+				sample += "'='"
+				sample += number
+				sample += "'--"
+				return
+			},
+		},
+		{
+			Form: "' or 1 --'",
+			Make: func() (sample string) {
+				sample += "'"
+				sample += sampleSpaces()
+				sample += sampleOr()
+				sample += sampleSpaces()
+				sample += sampleNumber(1337)
+				sample += sampleSpaces()
+				sample += "--'"
+				return
+			},
+		},
+		{
+			Form: "or 1=1--",
+			Make: func() (sample string) {
+				sample += sampleOr()
+				sample += sampleSpaces()
+				number := sampleNumber(1337)
+				sample += number
+				sample += "="
+				sample += number
+				sample += "--"
+				return
+			},
+		},
+		{
+			Form: "' or 1=1 or ''='",
+			Make: func() (sample string) {
+				sample += "'"
+				sample += sampleSpaces()
+				sample += sampleOr()
+				sample += sampleSpaces()
+				number := sampleNumber(1337)
+				sample += number
+				sample += "="
+				sample += number
+				sample += sampleSpaces()
+				sample += sampleOr()
+				sample += sampleSpaces()
+				sample += "''='"
+				return
+			},
+		},
+		{
+			Form: " or 1=1 or \"\"=",
+			Make: func() (sample string) {
+				sample += sampleSpaces()
+				sample += sampleOr()
+				sample += sampleSpaces()
+				number := sampleNumber(1337)
+				sample += number
+				sample += "="
+				sample += number
+				sample += sampleSpaces()
+				sample += sampleOr()
+				sample += sampleSpaces()
+				sample += "\"\"="
+				return
+			},
+		},
+		{
+			Form: "' or a=a--",
+			Make: func() (sample string) {
+				sample += "'"
+				sample += sampleSpaces()
+				sample += sampleOr()
+				sample += sampleSpaces()
+				name := sampleName()
+				sample += name
+				sample += "="
+				sample += name
+				sample += "--"
+				return
+			},
+		},
+		{
+			Form: " or a=a",
+			Make: func() (sample string) {
+				sample += sampleSpaces()
+				sample += sampleOr()
+				sample += sampleSpaces()
+				name := sampleName()
+				sample += name
+				sample += "="
+				sample += name
+				return
+			},
+		},
+		{
+			Form: "') or ('a'='a",
+			Make: func() (sample string) {
+				sample += "')"
+				sample += sampleSpaces()
+				sample += sampleOr()
+				sample += sampleSpaces()
+				sample += "('"
+				name := sampleName()
+				sample += name
+				sample += "'='"
+				sample += name
+				return
+			},
+		},
+		{
+			Form: "'hi' or 'x'='x';",
+			Make: func() (sample string) {
+				sample += "'"
+				sample += sampleName()
+				sample += "'"
+				sample += sampleSpaces()
+				sample += sampleOr()
+				sample += sampleSpaces()
+				sample += "'"
+				name := sampleName()
+				sample += name
+				sample += "'='"
+				sample += name
+				sample += "'"
+				return
+			},
+		},
+		{
+			Form: "or",
+			Make: func() (sample string) {
+				sample += sampleSpaces()
+				sample += sampleOr()
+				sample += sampleSpaces()
+				return
+			},
+		},
+		{
+			Form: "procedure",
+			Make: func() (sample string) {
+				sample += sampleSpaces()
+				sample += "procedure"
+				sample += sampleSpaces()
+				return
+			},
+		},
+		{
+			Form: "handler",
+			Make: func() (sample string) {
+				sample += sampleSpaces()
+				sample += "handler"
+				sample += sampleSpaces()
+				return
+			},
+		},
+		{
+			Form: "' or username like '%",
+			Make: func() (sample string) {
+				sample += "'"
+				sample += sampleSpaces()
+				sample += sampleOr()
+				sample += sampleSpaces()
+				sample += sampleName()
+				sample += sampleSpaces()
+				sample += "like"
+				sample += sampleSpaces()
+				sample += "'%"
+				return
+			},
+		},
+		{
+			Form: "' or uname like '%",
+		},
+		{
+			Form: "' or userid like '%",
+		},
+		{
+			Form: "' or uid like '%",
+		},
+		{
+			Form: "' or user like '%",
+		},
+		{
+			Form: "'; exec master..xp_cmdshell",
+			Make: func() (sample string) {
+				sample += "';"
+				sample += sampleSpaces()
+				sample += "exec"
+				sample += sampleSpaces()
+				sample += "master..xp_cmdshell"
+				return
+			},
+		},
+		{
+			Form: "'; exec xp_regread",
+			Make: func() (sample string) {
+				sample += "';"
+				sample += sampleSpaces()
+				sample += "exec"
+				sample += sampleSpaces()
+				sample += "xp_regread"
+				return
+			},
+		},
+		{
+			Form: "t'exec master..xp_cmdshell 'nslookup www.google.com'--",
+			Make: func() (sample string) {
+				sample += "t'exec"
+				sample += sampleSpaces()
+				sample += "master..xp_cmdshell"
+				sample += sampleSpaces()
+				sample += "'nslookup"
+				sample += sampleSpaces()
+				sample += sampleName()
+				sample += "."
+				sample += sampleName()
+				sample += "."
+				sample += sampleName()
+				sample += "'--"
+				return
+			},
+		},
+		{
+			Form: "--sp_password",
+			Make: func() (sample string) {
+				sample += "--"
+				sample += sampleSpaces()
+				sample += "sp_password"
+				sample += sampleSpaces()
+				return
+			},
+		},
+		{
+			Form: "' UNION SELECT",
+			Make: func() (sample string) {
+				sample += "'"
+				sample += sampleSpaces()
+				sample += "union"
+				sample += sampleSpaces()
+				sample += "select"
+				return
+			},
+		},
+		{
+			Form: "' UNION ALL SELECT",
+			Make: func() (sample string) {
+				sample += "'"
+				sample += sampleSpaces()
+				sample += "union"
+				sample += sampleSpaces()
+				sample += "all"
+				sample += sampleSpaces()
+				sample += "select"
+				return
+			},
+		},
+		{
+			Form: "' or (EXISTS)",
+			Make: func() (sample string) {
+				sample += "'"
+				sample += sampleSpaces()
+				sample += sampleOr()
+				sample += sampleSpaces()
+				sample += "(exists)"
+				return
+			},
+		},
+		{
+			Form: "' (select top 1",
+			Make: func() (sample string) {
+				sample += "'"
+				sample += sampleSpaces()
+				sample += "(select"
+				sample += sampleSpaces()
+				sample += "top"
+				sample += sampleSpaces()
+				sample += sampleNumber(1337)
+				return
+			},
+		},
+		{
+			Form: "'||UTL_HTTP.REQUEST",
+			Make: func() (sample string) {
+				sample += "'"
+				sample += sampleSpaces()
+				sample += sampleOr()
+				sample += sampleSpaces()
+				sample += "utl_http.request"
+				return
+			},
+		},
+		{
+			Form: "1;SELECT%20*",
+			Make: func() (sample string) {
+				sample += sampleNumber(1337)
+				sample += ";"
+				sample += "select"
+				sample += sampleHexSpaces()
+				sample += "*"
+				return
+			},
+		},
+		{
+			Form: "<>\"'%;)(&+",
+		},
+		{
+			Form: "'%20or%201=1",
+			Make: func() (sample string) {
+				sample += "'"
+				sample += sampleHexSpaces()
+				sample += sampleOr()
+				sample += sampleHexSpaces()
+				number := sampleNumber(1337)
+				sample += number
+				sample += "="
+				sample += number
+				return
+			},
+		},
+		{
+			Form: "'sqlattempt1",
+			Make: func() (sample string) {
+				sample += "'"
+				sample += sampleName()
+				return
+			},
+		},
+		{
+			Form: "%28",
+			Make: func() (sample string) {
+				sample += sampleSpaces()
+				sample += "%"
+				sample += sampleNumber(256)
+				sample += sampleSpaces()
+				return
+			},
+		},
+		{
+			Form: "%29",
+		},
+		{
+			Form: "%26",
+		},
+		{
+			Form: "%21",
+		},
+		{
+			Form: "' or ''='",
+			Make: func() (sample string) {
+				sample += "'"
+				sample += sampleSpaces()
+				sample += sampleOr()
+				sample += sampleSpaces()
+				sample += "''='"
+				return
+			},
+		},
+		{
+			Form: "' or 3=3",
+			Make: func() (sample string) {
+				sample += "'"
+				sample += sampleSpaces()
+				sample += sampleOr()
+				sample += sampleSpaces()
+				number := sampleNumber(1337)
+				sample += number
+				sample += "="
+				sample += number
+				return
+			},
+		},
+		{
+			Form: " or 3=3 --",
+			Make: func() (sample string) {
+				sample += sampleSpaces()
+				sample += sampleOr()
+				sample += sampleSpaces()
+				number := sampleNumber(1337)
+				sample += number
+				sample += "="
+				sample += number
+				sample += sampleSpaces()
+				sample += "--"
+				return
+			},
+		},
 	}
 	return generators
 }
