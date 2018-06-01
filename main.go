@@ -31,70 +31,49 @@ type Example struct {
 	Attack bool
 }
 
-// Mutate randomly mutates a string
-func Mutate(a string) string {
-	b := []rune(a)
-	switch rnd.Intn(4) {
-	case 0:
-		prefix := rune(rnd.Intn(255)) + 1
-		b = append([]rune{prefix}, b...)
-	case 1:
-		suffix := rune(rnd.Intn(255)) + 1
-		b = append(b, suffix)
-	case 2:
-		prefix := rune(rnd.Intn(255)) + 1
-		suffix := rune(rnd.Intn(255)) + 1
-		b = append([]rune{prefix}, b...)
-		b = append(b, suffix)
-	case 3:
-		b[rnd.Intn(len(b))] = rune(rnd.Intn(255)) + 1
+// Examples are a set of examples
+type Examples []Example
+
+// Permute puts the examples into random order
+func (e Examples) Permute() {
+	length := len(e)
+	for i := range e {
+		j := i + rand.Intn(length-i)
+		e[i], e[j] = e[j], e[i]
 	}
-	return string(b)
 }
 
-func generateTrainingData() []Example {
-	data := make([]Example, 0)
-	for _, file := range FuzzFiles {
-		in, err := os.Open(file)
-		if err != nil {
-			panic(err)
-		}
-		reader := bufio.NewReader(in)
-		lines := make([]string, 0)
-		line, err := reader.ReadString('\n')
-		for err == nil {
-			line = strings.TrimSuffix(line, "\n")
-			lines = append(lines, line)
-			line, err = reader.ReadString('\n')
-		}
-
-		for _, line := range lines {
-			if strings.HasPrefix(line, "#") {
-				continue
-			}
-			data = append(data, Example{[]byte(strings.ToLower(line)), true})
+func generateTrainingData() (training, validation Examples) {
+	generators := TrainingDataGenerator(rnd)
+	for _, generator := range generators {
+		if generator.Make != nil {
 			for i := 0; i < 64; i++ {
-				data = append(data, Example{[]byte(strings.ToLower(Mutate(line))), true})
+				line := generator.Make()
+				training = append(training, Example{[]byte(strings.ToLower(line)), true})
 			}
 		}
 	}
 
-	length := len(data)
+	length := len(training)
 	for i := 0; i < length; i++ {
 		size, example := 1+rnd.Intn(16), ""
 		for j := 0; j < size; j++ {
 			example += string(rune(int('a') + rnd.Intn(int('z'-'a'))))
 		}
-		data = append(data, Example{[]byte(strings.ToLower(example)), false})
+		training = append(training, Example{[]byte(strings.ToLower(example)), false})
 	}
 
-	length = len(data)
-	for i := range data {
-		j := i + rand.Intn(length-i)
-		data[i], data[j] = data[j], data[i]
+	training.Permute()
+	validation = training[:1000]
+	training = training[1000:]
+
+	for _, generator := range generators {
+		if !generator.Abstract {
+			training = append(training, Example{[]byte(strings.ToLower(generator.Form)), true})
+		}
 	}
 
-	return data
+	return
 }
 
 func printChunks() {
@@ -143,36 +122,53 @@ func printChunks() {
 	fmt.Println(len(chunks))
 }
 
-var chunks = flag.Bool("chunks", false, "generate chunks")
+var (
+	chunks = flag.Bool("chunks", false, "generate chunks")
+	data   = flag.Bool("data", false, "print training data")
+	epochs = flag.Int("epochs", 1, "the number of epochs for training")
+)
 
 func main() {
 	flag.Parse()
+	rnd = rand.New(rand.NewSource(1))
 
 	if *chunks {
 		printChunks()
 		return
 	}
 
-	rnd = rand.New(rand.NewSource(1))
-	data := generateTrainingData()
-	fmt.Println(len(data))
+	if *data {
+		generators := TrainingDataGenerator(rnd)
+		for _, generator := range generators {
+			fmt.Println(generator.Form)
+			if generator.Make != nil {
+				for i := 0; i < 10; i++ {
+					fmt.Println(generator.Make())
+				}
+			}
+			fmt.Println()
+		}
+		return
+	}
 
-	validate := data[:1000]
-	train := data[1000:]
+	training, validation := generateTrainingData()
+	fmt.Println(len(training))
 
 	networkRnd := rand.New(rand.NewSource(1))
 	network := gru.NewGRU(networkRnd)
-	for i := 0; i < 40000; i++ {
-		example := train[rnd.Intn(len(train))]
-		cost := network.Train(example.Data, example.Attack)
-		if i%100 == 0 {
-			fmt.Println(cost)
+	for epoch := 0; epoch < *epochs; epoch++ {
+		training.Permute()
+		for i, example := range training {
+			cost := network.Train(example.Data, example.Attack)
+			if i%100 == 0 {
+				fmt.Println(cost)
+			}
 		}
 	}
 
 	correct, attacks, nattacks := 0, 0, 0
-	for i := range validate {
-		example := validate[i]
+	for i := range validation {
+		example := validation[i]
 		attack := network.Test(example.Data)
 		if example.Attack == attack {
 			correct++
@@ -185,5 +181,5 @@ func main() {
 			nattacks++
 		}
 	}
-	fmt.Println(attacks, nattacks, correct, len(validate))
+	fmt.Println(attacks, nattacks, correct, len(validation))
 }
