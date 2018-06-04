@@ -1,10 +1,12 @@
 package gru
 
 import (
+	"encoding/gob"
 	"fmt"
 	"io/ioutil"
 	"math"
 	"math/rand"
+	"os"
 	"strconv"
 
 	G "gorgonia.org/gorgonia"
@@ -96,6 +98,182 @@ func NewModel(rnd *rand.Rand, inputs, inputSize, embeddingSize, outputSize int, 
 	model.bo = tensor.New(tensor.Of(tensor.Float32), tensor.WithShape(outputSize))
 
 	return model
+}
+
+func (m *Model) Write(file string) error {
+	out, err := os.Create(file)
+	if err != nil {
+		return err
+	}
+	defer out.Close()
+
+	encoder := gob.NewEncoder(out)
+	write := func(t *tensor.Dense) error {
+		return encoder.Encode(t.Data())
+	}
+
+	for _, layer := range m.layers {
+		err = write(layer.wf)
+		if err != nil {
+			return err
+		}
+		err = write(layer.uf)
+		if err != nil {
+			return err
+		}
+		err = write(layer.bf)
+		if err != nil {
+			return err
+		}
+
+		err = write(layer.wh)
+		if err != nil {
+			return err
+		}
+		err = write(layer.uh)
+		if err != nil {
+			return err
+		}
+		err = write(layer.bh)
+		if err != nil {
+			return err
+		}
+	}
+	err = write(m.we)
+	if err != nil {
+		return err
+	}
+	err = write(m.be)
+	if err != nil {
+		return err
+	}
+	err = write(m.wo)
+	if err != nil {
+		return err
+	}
+	err = write(m.bo)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *Model) Read(file string) error {
+	in, err := os.Open(file)
+	if err != nil {
+		return nil
+	}
+	defer in.Close()
+
+	decoder := gob.NewDecoder(in)
+	read := func(t *tensor.Dense) error {
+		data := t.Data().([]float32)
+		return decoder.Decode(&data)
+	}
+
+	for _, layer := range m.layers {
+		err = read(layer.wf)
+		if err != nil {
+			return err
+		}
+		err = read(layer.uf)
+		if err != nil {
+			return err
+		}
+		err = read(layer.bf)
+		if err != nil {
+			return err
+		}
+
+		err = read(layer.wh)
+		if err != nil {
+			return err
+		}
+		err = read(layer.uh)
+		if err != nil {
+			return err
+		}
+		err = read(layer.bh)
+		if err != nil {
+			return err
+		}
+	}
+	err = read(m.we)
+	if err != nil {
+		return err
+	}
+	err = read(m.be)
+	if err != nil {
+		return err
+	}
+	err = read(m.wo)
+	if err != nil {
+		return err
+	}
+	err = read(m.bo)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *Model) compare(b *Model) error {
+	compare := func(a, b *tensor.Dense, name string) error {
+		x := a.Data().([]float32)
+		y := b.Data().([]float32)
+		for k, v := range x {
+			if v != y[k] {
+				return fmt.Errorf("%v %v %v %v %v", k, name, "they don't match", v, y[k])
+			}
+		}
+		return nil
+	}
+	for i, layer := range m.layers {
+		err := compare(layer.wf, b.layers[i].wf, "wf"+string(i))
+		if err != nil {
+			return err
+		}
+		err = compare(layer.uf, b.layers[i].uf, "uf"+string(i))
+		if err != nil {
+			return err
+		}
+		err = compare(layer.bf, b.layers[i].bf, "bf"+string(i))
+		if err != nil {
+			return err
+		}
+		err = compare(layer.wh, b.layers[i].wh, "wh"+string(i))
+		if err != nil {
+			return err
+		}
+		err = compare(layer.uh, b.layers[i].uh, "uh"+string(i))
+		if err != nil {
+			return err
+		}
+		err = compare(layer.bh, b.layers[i].bh, "bh"+string(i))
+		if err != nil {
+			return err
+		}
+	}
+	err := compare(m.we, b.we, "we")
+	if err != nil {
+		return err
+	}
+	err = compare(m.be, b.be, "be")
+	if err != nil {
+		return err
+	}
+	err = compare(m.wo, b.wo, "wo")
+	if err != nil {
+		return err
+	}
+	err = compare(m.bo, b.bo, "bo")
+	if err != nil {
+		return err
+	}
+
+	return nil
 }
 
 type gru struct {

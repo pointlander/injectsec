@@ -47,7 +47,7 @@ func generateTrainingData() (training, validation Examples) {
 	generators := TrainingDataGenerator(rnd)
 	for _, generator := range generators {
 		if generator.Make != nil {
-			for i := 0; i < 64; i++ {
+			for i := 0; i < 128; i++ {
 				line := generator.Make()
 				training = append(training, Example{[]byte(strings.ToLower(line)), true})
 			}
@@ -64,8 +64,8 @@ func generateTrainingData() (training, validation Examples) {
 	}
 
 	training.Permute()
-	validation = training[:1000]
-	training = training[1000:]
+	validation = training[:2000]
+	training = training[2000:]
 
 	for _, generator := range generators {
 		if !generator.Abstract {
@@ -151,11 +151,25 @@ func main() {
 		return
 	}
 
+	os.Mkdir("output", 0744)
+	results, err := os.Create("output/results.txt")
+	if err != nil {
+		panic(err)
+	}
+	defer results.Close()
+
+	printResults := func(a ...interface{}) {
+		s := fmt.Sprint(a...)
+		fmt.Println(s)
+		results.WriteString(s + "\n")
+	}
+
 	training, validation := generateTrainingData()
 	fmt.Println(len(training))
 
 	networkRnd := rand.New(rand.NewSource(1))
 	network := gru.NewGRU(networkRnd)
+
 	for epoch := 0; epoch < *epochs; epoch++ {
 		training.Permute()
 		for i, example := range training {
@@ -164,22 +178,29 @@ func main() {
 				fmt.Println(cost)
 			}
 		}
-	}
 
-	correct, attacks, nattacks := 0, 0, 0
-	for i := range validation {
-		example := validation[i]
-		attack := network.Test(example.Data)
-		if example.Attack == attack {
-			correct++
-		} else {
-			fmt.Println(string(example.Data), example.Attack, attack)
+		file := fmt.Sprintf("output/w%v.w", epoch)
+		printResults(file)
+		err = network.Write(file)
+		if err != nil {
+			panic(err)
 		}
-		if example.Attack {
-			attacks++
-		} else {
-			nattacks++
+
+		correct, attacks, nattacks := 0, 0, 0
+		for i := range validation {
+			example := validation[i]
+			attack := network.Test(example.Data)
+			if example.Attack == attack {
+				correct++
+			} else {
+				printResults(string(example.Data), example.Attack, attack)
+			}
+			if example.Attack {
+				attacks++
+			} else {
+				nattacks++
+			}
 		}
+		printResults(attacks, nattacks, correct, len(validation))
 	}
-	fmt.Println(attacks, nattacks, correct, len(validation))
 }
