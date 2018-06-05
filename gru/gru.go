@@ -8,6 +8,12 @@ import (
 	G "gorgonia.org/gorgonia"
 )
 
+const (
+	embeddingSize = 10
+	outputSize    = 2
+	hiddenSize    = 5
+)
+
 // Chunks are SQL chunks
 var Chunks = []string{
 	"/*",
@@ -85,9 +91,9 @@ type GRU struct {
 func NewGRU(rnd *rand.Rand) *GRU {
 	steps := 3
 	inputSize := 256 + len(Chunks)
-	embeddingSize := 10
-	outputSize := 2
-	hiddenSizes := []int{5}
+	embeddingSize := embeddingSize
+	outputSize := outputSize
+	hiddenSizes := []int{hiddenSize}
 	gru := NewModel(rnd, 2, inputSize, embeddingSize, outputSize, hiddenSizes)
 
 	learner := make([]*RNN, steps)
@@ -170,4 +176,33 @@ func (g *GRU) Train(input []byte, attack bool) float32 {
 func (g *GRU) Test(input []byte) bool {
 	data := convert(input)
 	return g.inference.IsAttack(data)
+}
+
+// Detector detects SQL injection attacks
+type Detector struct {
+	*Model
+}
+
+// NewDetector creates a new detector
+func NewDetector() *Detector {
+	inputSize := 256 + len(Chunks)
+	embeddingSize := embeddingSize
+	outputSize := outputSize
+	hiddenSizes := []int{hiddenSize}
+	rnd := rand.New(rand.NewSource(1))
+	gru := NewModel(rnd, 2, inputSize, embeddingSize, outputSize, hiddenSizes)
+	return &Detector{
+		Model: gru,
+	}
+}
+
+// Detect returns true if the input is a SQL injection attack
+func (d *Detector) Detect(input []byte) bool {
+	inference := NewRNN(d.Model)
+	err := inference.ModeInference()
+	if err != nil {
+		panic(err)
+	}
+	data := convert(input)
+	return inference.IsAttack(data)
 }

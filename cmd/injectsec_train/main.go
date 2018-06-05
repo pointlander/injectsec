@@ -54,11 +54,19 @@ func generateTrainingData() (training, validation Examples) {
 		}
 	}
 
+	var symbols []rune
+	for s := 'a'; s <= 'z'; s++ {
+		symbols = append(symbols, s)
+	}
+	for s := '0'; s <= '9'; s++ {
+		symbols = append(symbols, s)
+	}
+
 	length := len(training)
 	for i := 0; i < length; i++ {
 		size, example := 1+rnd.Intn(16), ""
 		for j := 0; j < size; j++ {
-			example += string(rune(int('a') + rnd.Intn(int('z'-'a'))))
+			example += string(symbols[rnd.Intn(len(symbols))])
 		}
 		training = append(training, Example{[]byte(strings.ToLower(example)), false})
 	}
