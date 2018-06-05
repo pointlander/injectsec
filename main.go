@@ -181,7 +181,7 @@ func main() {
 
 		file := fmt.Sprintf("output/w%v.w", epoch)
 		printResults(file)
-		err = network.Write(file)
+		err = network.WriteFile(file)
 		if err != nil {
 			panic(err)
 		}

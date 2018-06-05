@@ -3,6 +3,7 @@ package gru
 import (
 	"encoding/gob"
 	"fmt"
+	"io"
 	"io/ioutil"
 	"math"
 	"math/rand"
@@ -100,20 +101,23 @@ func NewModel(rnd *rand.Rand, inputs, inputSize, embeddingSize, outputSize int, 
 	return model
 }
 
-func (m *Model) Write(file string) error {
+func (m *Model) WriteFile(file string) error {
 	out, err := os.Create(file)
 	if err != nil {
 		return err
 	}
 	defer out.Close()
+	return m.Write(out)
+}
 
+func (m *Model) Write(out io.Writer) error {
 	encoder := gob.NewEncoder(out)
 	write := func(t *tensor.Dense) error {
 		return encoder.Encode(t.Data())
 	}
 
 	for _, layer := range m.layers {
-		err = write(layer.wf)
+		err := write(layer.wf)
 		if err != nil {
 			return err
 		}
@@ -139,7 +143,7 @@ func (m *Model) Write(file string) error {
 			return err
 		}
 	}
-	err = write(m.we)
+	err := write(m.we)
 	if err != nil {
 		return err
 	}
@@ -159,13 +163,7 @@ func (m *Model) Write(file string) error {
 	return nil
 }
 
-func (m *Model) Read(file string) error {
-	in, err := os.Open(file)
-	if err != nil {
-		return nil
-	}
-	defer in.Close()
-
+func (m *Model) Read(in io.Reader) error {
 	decoder := gob.NewDecoder(in)
 	read := func(t *tensor.Dense) error {
 		data := t.Data().([]float32)
@@ -173,7 +171,7 @@ func (m *Model) Read(file string) error {
 	}
 
 	for _, layer := range m.layers {
-		err = read(layer.wf)
+		err := read(layer.wf)
 		if err != nil {
 			return err
 		}
@@ -199,7 +197,7 @@ func (m *Model) Read(file string) error {
 			return err
 		}
 	}
-	err = read(m.we)
+	err := read(m.we)
 	if err != nil {
 		return err
 	}
@@ -217,6 +215,15 @@ func (m *Model) Read(file string) error {
 	}
 
 	return nil
+}
+
+func (m *Model) ReadFile(file string) error {
+	in, err := os.Open(file)
+	if err != nil {
+		return nil
+	}
+	defer in.Close()
+	return m.Read(in)
 }
 
 func (m *Model) compare(b *Model) error {

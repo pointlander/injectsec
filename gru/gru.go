@@ -105,7 +105,7 @@ func NewGRU(rnd *rand.Rand) *GRU {
 		panic(err)
 	}
 
-	learnrate := 0.01
+	learnrate := 0.001
 	l2reg := 0.000001
 	clipVal := 5.0
 	solver := G.NewRMSPropSolver(G.WithLearnRate(learnrate), G.WithL2Reg(l2reg), G.WithClip(clipVal))
