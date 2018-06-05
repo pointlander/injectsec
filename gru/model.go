@@ -90,6 +90,7 @@ func NewModel(rnd *rand.Rand, inputs, inputSize, embeddingSize, outputSize int, 
 	return model
 }
 
+// WriteFile writes the weights to a file
 func (m *Model) WriteFile(file string) error {
 	out, err := os.Create(file)
 	if err != nil {
@@ -99,6 +100,7 @@ func (m *Model) WriteFile(file string) error {
 	return m.Write(out)
 }
 
+// Write writes the weights to a Writer
 func (m *Model) Write(out io.Writer) error {
 	encoder := gob.NewEncoder(out)
 	write := func(t *tensor.Dense) error {
@@ -152,6 +154,7 @@ func (m *Model) Write(out io.Writer) error {
 	return nil
 }
 
+// Read reads the weights from a Reader
 func (m *Model) Read(in io.Reader) error {
 	decoder := gob.NewDecoder(in)
 	read := func(t *tensor.Dense) error {
@@ -206,6 +209,7 @@ func (m *Model) Read(in io.Reader) error {
 	return nil
 }
 
+// ReadFile reads the weights from a file
 func (m *Model) ReadFile(file string) error {
 	in, err := os.Open(file)
 	if err != nil {
@@ -325,7 +329,7 @@ type gruOut struct {
 	probabilities *G.Node
 }
 
-// CharRNN is a LSTM that takes characters as input
+// RNN is a LSTM that takes characters as input
 type RNN struct {
 	*Model
 	layers []*gru
@@ -345,7 +349,7 @@ type RNN struct {
 	machine  G.VM
 }
 
-// NewCharRNN create a new GRU for characters as inputs
+// NewRNN create a new GRU for characters as inputs
 func NewRNN(model *Model) *RNN {
 	g := G.NewGraph()
 	var layers []*gru
