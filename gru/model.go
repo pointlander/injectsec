@@ -14,17 +14,6 @@ import (
 	"gorgonia.org/tensor"
 )
 
-// prediction params
-var softmaxTemperature = 1.0
-var maxCharGen = 100
-
-type contextualError interface {
-	error
-	Node() *G.Node
-	Value() G.Value
-	InstructionID() int
-}
-
 type layer struct {
 	wf *tensor.Dense
 	uf *tensor.Dense
@@ -337,7 +326,7 @@ type gruOut struct {
 }
 
 // CharRNN is a LSTM that takes characters as input
-type CharRNN struct {
+type RNN struct {
 	*Model
 	layers []*gru
 
@@ -357,7 +346,7 @@ type CharRNN struct {
 }
 
 // NewCharRNN create a new GRU for characters as inputs
-func NewCharRNN(model *Model) *CharRNN {
+func NewRNN(model *Model) *RNN {
 	g := G.NewGraph()
 	var layers []*gru
 	var hiddens G.Nodes
@@ -375,7 +364,7 @@ func NewCharRNN(model *Model) *CharRNN {
 	be := G.NodeFromAny(g, model.be, G.WithName("be"))
 	wo := G.NodeFromAny(g, model.wo, G.WithName("wo"))
 	bo := G.NodeFromAny(g, model.bo, G.WithName("bo"))
-	return &CharRNN{
+	return &RNN{
 		Model:   model,
 		layers:  layers,
 		g:       g,
@@ -387,7 +376,7 @@ func NewCharRNN(model *Model) *CharRNN {
 	}
 }
 
-func (r *CharRNN) learnables() (value G.Nodes) {
+func (r *RNN) learnables() (value G.Nodes) {
 	for _, l := range r.layers {
 		nodes := G.Nodes{
 			l.wf,
@@ -408,7 +397,7 @@ func (r *CharRNN) learnables() (value G.Nodes) {
 	return
 }
 
-func (r *CharRNN) fwd(previous *gruOut) (inputs []*tensor.Dense, retVal *gruOut, err error) {
+func (r *RNN) fwd(previous *gruOut) (inputs []*tensor.Dense, retVal *gruOut, err error) {
 	previousHiddens := r.hiddens
 	if previous != nil {
 		previousHiddens = previous.hiddens
@@ -458,7 +447,7 @@ func (r *CharRNN) fwd(previous *gruOut) (inputs []*tensor.Dense, retVal *gruOut,
 	return
 }
 
-func (r *CharRNN) feedback(tap int) {
+func (r *RNN) feedback(tap int) {
 	prev := r.previous[tap]
 	for i := range r.hiddens {
 		input := r.hiddens[i].Value().(*tensor.Dense)
@@ -470,14 +459,14 @@ func (r *CharRNN) feedback(tap int) {
 	}
 }
 
-func (r *CharRNN) reset() {
+func (r *RNN) reset() {
 	for i := range r.hiddens {
 		r.hiddens[i].Value().(*tensor.Dense).Zero()
 	}
 }
 
 // ModeLearn puts the CharRNN into a learning mode
-func (r *CharRNN) ModeLearn(steps int) (err error) {
+func (r *RNN) ModeLearn(steps int) (err error) {
 	inputs := make([][]*tensor.Dense, r.Model.inputs)
 	outputs := make([]*tensor.Dense, steps)
 	previous := make([]*gruOut, steps)
@@ -532,7 +521,7 @@ func (r *CharRNN) ModeLearn(steps int) (err error) {
 }
 
 // ModeInference puts the CharRNN into inference mode
-func (r *CharRNN) ModeInference() (err error) {
+func (r *RNN) ModeInference() (err error) {
 	inputs := make([][]*tensor.Dense, r.Model.inputs)
 	previous := make([]*gruOut, 1)
 
@@ -556,7 +545,7 @@ func (r *CharRNN) ModeInference() (err error) {
 }
 
 // IsAttack determines if an input is an attack
-func (r *CharRNN) IsAttack(input []int) bool {
+func (r *RNN) IsAttack(input []int) bool {
 	end := len(input) - 1
 	r.reset()
 	for i := range input {
@@ -594,7 +583,7 @@ func (r *CharRNN) IsAttack(input []int) bool {
 }
 
 // Learn learns strings
-func (r *CharRNN) Learn(data []int, attack bool, solver G.Solver) (retCost, retPerp []float64, err error) {
+func (r *RNN) Learn(data []int, attack bool, solver G.Solver) (retCost, retPerp []float64, err error) {
 	end := len(data) - 1
 
 	r.reset()
@@ -619,15 +608,8 @@ func (r *CharRNN) Learn(data []int, attack bool, solver G.Solver) (retCost, retP
 			}
 		}
 
-		// f, _ := os.Create("FAIL.log")
-		// logger := log.New(f, "", 0)
-		// machine := NewLispMachine(g, WithLogger(logger), WithValueFmt("%-1.1s"), LogBothDir(), WithWatchlist())
-
-		if err = r.machine.RunAll(); err != nil {
-			if ctxerr, ok := err.(contextualError); ok {
-				ioutil.WriteFile("FAIL.dot", []byte(ctxerr.Node().RestrictedToDot(3, 3)), 0644)
-
-			}
+		err = r.machine.RunAll()
+		if err != nil {
 			return
 		}
 

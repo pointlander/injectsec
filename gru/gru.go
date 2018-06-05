@@ -75,8 +75,8 @@ func init() {
 // GRU is a GRU based anomaly detection engine
 type GRU struct {
 	*Model
-	learner   []*CharRNN
-	inference *CharRNN
+	learner   []*RNN
+	inference *RNN
 	solver    G.Solver
 	steps     int
 }
@@ -90,16 +90,16 @@ func NewGRU(rnd *rand.Rand) *GRU {
 	hiddenSizes := []int{5}
 	gru := NewModel(rnd, 2, inputSize, embeddingSize, outputSize, hiddenSizes)
 
-	learner := make([]*CharRNN, steps)
+	learner := make([]*RNN, steps)
 	for i := range learner {
-		learner[i] = NewCharRNN(gru)
+		learner[i] = NewRNN(gru)
 		err := learner[i].ModeLearn(i + 1)
 		if err != nil {
 			panic(err)
 		}
 	}
 
-	inference := NewCharRNN(gru)
+	inference := NewRNN(gru)
 	err := inference.ModeInference()
 	if err != nil {
 		panic(err)
