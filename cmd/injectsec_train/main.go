@@ -64,9 +64,14 @@ func generateTrainingData() (training, validation Examples) {
 
 	length := len(training)
 	for i := 0; i < length; i++ {
-		size, example := 1+rnd.Intn(16), ""
-		for j := 0; j < size; j++ {
-			example += string(symbols[rnd.Intn(len(symbols))])
+		words, example, ws := rnd.Intn(3)+1, "", ""
+		for w := 0; w < words; w++ {
+			example += ws
+			size := 1 + rnd.Intn(16)
+			for j := 0; j < size; j++ {
+				example += string(symbols[rnd.Intn(len(symbols))])
+			}
+			ws = " "
 		}
 		training = append(training, Example{[]byte(strings.ToLower(example)), false})
 	}

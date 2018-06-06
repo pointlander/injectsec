@@ -16,6 +16,7 @@ const (
 
 // Chunks are SQL chunks
 var Chunks = []string{
+	"0x",
 	"/*",
 	"*/",
 	"--",

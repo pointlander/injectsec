@@ -8,10 +8,13 @@ import "testing"
 
 func TestDetector(t *testing.T) {
 	detector := NewDetector()
-	if detector.Detect([]byte("test or 1337=1337 --\"")) != true {
+	if detector.DetectString("test or 1337=1337 --\"") != true {
 		t.Fatal("should be a sql injection attack")
 	}
-	if detector.Detect([]byte("abc123")) != false {
+	if detector.DetectString("abc123") != false {
+		t.Fatal("should not be a sql injection attack")
+	}
+	if detector.DetectString("abc123 123abc") != false {
 		t.Fatal("should not be a sql injection attack")
 	}
 }

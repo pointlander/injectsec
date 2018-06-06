@@ -6,6 +6,7 @@ package injectsec
 
 import (
 	"bytes"
+	"strings"
 
 	"github.com/pointlander/injectsec/gru"
 )
@@ -29,4 +30,9 @@ func NewDetector() *Detector {
 	return &Detector{
 		Detector: detector,
 	}
+}
+
+// DetectString tests if a string is a SQL injection attack
+func (d *Detector) DetectString(a string) bool {
+	return d.Detect([]byte(strings.ToLower(a)))
 }
