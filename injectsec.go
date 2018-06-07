@@ -6,33 +6,27 @@ package injectsec
 
 import (
 	"bytes"
-	"strings"
 
 	"github.com/pointlander/injectsec/gru"
 )
 
-// Detector detects SQL injection attacks
-type Detector struct {
-	*gru.Detector
+// DetectorMaker makes SQL injection attack detectors
+type DetectorMaker struct {
+	*gru.DetectorMaker
 }
 
-// NewDetector creates a new detector
-func NewDetector() *Detector {
-	detector := gru.NewDetector()
+// NewDetectorMaker creates a new detector maker
+func NewDetectorMaker() *DetectorMaker {
+	maker := gru.NewDetectorMaker()
 	weights, err := ReadFile("weights.w")
 	if err != nil {
 		panic(err)
 	}
-	err = detector.Read(bytes.NewBuffer(weights))
+	err = maker.Read(bytes.NewBuffer(weights))
 	if err != nil {
 		panic(err)
 	}
-	return &Detector{
-		Detector: detector,
+	return &DetectorMaker{
+		DetectorMaker: maker,
 	}
-}
-
-// DetectString tests if a string is a SQL injection attack
-func (d *Detector) DetectString(a string) bool {
-	return d.Detect([]byte(strings.ToLower(a)))
 }

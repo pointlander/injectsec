@@ -46,6 +46,9 @@ func (e Examples) Permute() {
 func generateTrainingData() (training, validation Examples) {
 	generators := TrainingDataGenerator(rnd)
 	for _, generator := range generators {
+		if generator.Skip == true {
+			continue
+		}
 		if generator.Make != nil {
 			for i := 0; i < 128; i++ {
 				line := generator.Make()
@@ -55,11 +58,31 @@ func generateTrainingData() (training, validation Examples) {
 	}
 
 	var symbols []rune
+	for s := '0'; s <= '9'; s++ {
+		symbols = append(symbols, s)
+	}
+	for i := 0; i < 128; i++ {
+		example, size := "", 1+rnd.Intn(8)
+		for j := 0; j < size; j++ {
+			example += string(symbols[rnd.Intn(len(symbols))])
+		}
+		training = append(training, Example{[]byte(strings.ToLower(example)), false})
+	}
+
 	for s := 'a'; s <= 'z'; s++ {
 		symbols = append(symbols, s)
 	}
-	for s := '0'; s <= '9'; s++ {
-		symbols = append(symbols, s)
+	for i := 0; i < 128; i++ {
+		left, size := "", 1+rnd.Intn(8)
+		for j := 0; j < size; j++ {
+			left += string(symbols[rnd.Intn(len(symbols))])
+		}
+		right, size := "", 1+rnd.Intn(8)
+		for j := 0; j < size; j++ {
+			right += string(symbols[rnd.Intn(len(symbols))])
+		}
+		example := left + "or" + right
+		training = append(training, Example{[]byte(strings.ToLower(example)), false})
 	}
 
 	length := len(training)
@@ -81,6 +104,9 @@ func generateTrainingData() (training, validation Examples) {
 	training = training[2000:]
 
 	for _, generator := range generators {
+		if generator.Skip == true {
+			continue
+		}
 		if !generator.Abstract {
 			training = append(training, Example{[]byte(strings.ToLower(generator.Form)), true})
 		}

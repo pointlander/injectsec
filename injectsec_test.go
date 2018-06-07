@@ -7,14 +7,21 @@ package injectsec
 import "testing"
 
 func TestDetector(t *testing.T) {
-	detector := NewDetector()
-	if detector.DetectString("test or 1337=1337 --\"") != true {
+	maker := NewDetectorMaker()
+	detector := maker.Make()
+	if detector.Detect("test or 1337=1337 --\"") != true {
 		t.Fatal("should be a sql injection attack")
 	}
-	if detector.DetectString("abc123") != false {
+	if detector.Detect("abc123") != false {
 		t.Fatal("should not be a sql injection attack")
 	}
-	if detector.DetectString("abc123 123abc") != false {
+	if detector.Detect("abc123 123abc") != false {
+		t.Fatal("should not be a sql injection attack")
+	}
+	if detector.Detect("123") != false {
+		t.Fatal("should not be a sql injection attack")
+	}
+	if detector.Detect("abcorabc") != false {
 		t.Fatal("should not be a sql injection attack")
 	}
 }

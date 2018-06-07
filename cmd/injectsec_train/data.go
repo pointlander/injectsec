@@ -13,6 +13,7 @@ import (
 // Generator generates training data
 type Generator struct {
 	Form     string
+	Skip     bool
 	Abstract bool
 	Make     func() (sample string)
 }
@@ -555,6 +556,7 @@ func TrainingDataGenerator(rnd *rand.Rand) []Generator {
 		},
 		{
 			Form: "0",
+			Skip: true,
 			Make: func() (sample string) {
 				sample += sampleNumber(1337)
 				return

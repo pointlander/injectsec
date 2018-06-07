@@ -4,6 +4,8 @@ import (
 	"fmt"
 	"math/rand"
 	"sort"
+	"strings"
+	"unicode"
 
 	G "gorgonia.org/gorgonia"
 )
@@ -179,31 +181,53 @@ func (g *GRU) Test(input []byte) bool {
 	return g.inference.IsAttack(data)
 }
 
-// Detector detects SQL injection attacks
-type Detector struct {
+// DetectorMaker makes SQL injection attack detectors
+type DetectorMaker struct {
 	*Model
 }
 
-// NewDetector creates a new detector
-func NewDetector() *Detector {
+// NewDetectorMaker creates a new detector maker
+func NewDetectorMaker() *DetectorMaker {
 	inputSize := 256 + len(Chunks)
 	embeddingSize := embeddingSize
 	outputSize := outputSize
 	hiddenSizes := []int{hiddenSize}
 	rnd := rand.New(rand.NewSource(1))
 	gru := NewModel(rnd, 2, inputSize, embeddingSize, outputSize, hiddenSizes)
-	return &Detector{
+	return &DetectorMaker{
 		Model: gru,
 	}
 }
 
-// Detect returns true if the input is a SQL injection attack
-func (d *Detector) Detect(input []byte) bool {
+// Detector detects SQL injection attacks
+type Detector struct {
+	*RNN
+}
+
+// Make makes a new detector
+func (d *DetectorMaker) Make() *Detector {
 	inference := NewRNN(d.Model)
 	err := inference.ModeInference()
 	if err != nil {
 		panic(err)
 	}
-	data := convert(input)
-	return inference.IsAttack(data)
+	return &Detector{
+		RNN: inference,
+	}
+}
+
+// Detect returns true if the input is a SQL injection attack
+func (d *Detector) Detect(a string) bool {
+	isNumber := true
+	for _, v := range a {
+		if !unicode.IsDigit(v) {
+			isNumber = false
+			break
+		}
+	}
+	if isNumber {
+		return false
+	}
+	data := convert([]byte(strings.ToLower(a)))
+	return d.IsAttack(data)
 }
