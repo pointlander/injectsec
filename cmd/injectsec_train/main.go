@@ -85,14 +85,32 @@ func generateTrainingData() (training, validation Examples) {
 		training = append(training, Example{[]byte(strings.ToLower(example)), false})
 	}
 
+	var symbolsNumeric, symbolsAlphabet []rune
+	for s := '0'; s <= '9'; s++ {
+		symbolsNumeric = append(symbolsNumeric, s)
+	}
+	for s := 'a'; s <= 'z'; s++ {
+		symbolsAlphabet = append(symbolsAlphabet, s)
+	}
 	length := len(training)
 	for i := 0; i < length; i++ {
 		words, example, ws := rnd.Intn(3)+1, "", ""
 		for w := 0; w < words; w++ {
 			example += ws
-			size := 1 + rnd.Intn(16)
-			for j := 0; j < size; j++ {
-				example += string(symbols[rnd.Intn(len(symbols))])
+			size, typ := 1+rnd.Intn(16), rnd.Intn(3)
+			switch typ {
+			case 0:
+				for j := 0; j < size; j++ {
+					example += string(symbolsNumeric[rnd.Intn(len(symbolsNumeric))])
+				}
+			case 1:
+				for j := 0; j < size; j++ {
+					example += string(symbolsAlphabet[rnd.Intn(len(symbolsAlphabet))])
+				}
+			case 2:
+				for j := 0; j < size; j++ {
+					example += string(symbols[rnd.Intn(len(symbols))])
+				}
 			}
 			ws = " "
 		}

@@ -24,4 +24,7 @@ func TestDetector(t *testing.T) {
 	if detector.Detect("abcorabc") != false {
 		t.Fatal("should not be a sql injection attack")
 	}
+	if detector.Detect("available") != false {
+		t.Fatal("should not be a sql injection attack")
+	}
 }
