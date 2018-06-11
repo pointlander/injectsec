@@ -228,6 +228,18 @@ func (d *Detector) Detect(a string) (float32, error) {
 	if isNumber {
 		return 0, nil
 	}
+
+	isWord := true
+	for _, v := range a {
+		if !unicode.IsLetter(v) {
+			isWord = false
+			break
+		}
+	}
+	if isWord {
+		return 0, nil
+	}
+
 	data := convert([]byte(strings.ToLower(a)))
 	return d.AttackProbability(data)
 }
