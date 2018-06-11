@@ -548,8 +548,7 @@ func (r *RNN) ModeInference() (err error) {
 	return
 }
 
-// IsAttack determines if an input is an attack
-func (r *RNN) IsAttack(input []int) bool {
+func (r *RNN) getProbabilities(input []int) G.Value {
 	end := len(input) - 1
 	r.reset()
 	for i := range input {
@@ -567,7 +566,30 @@ func (r *RNN) IsAttack(input []int) bool {
 		r.machine.Reset()
 	}
 
-	value := r.previous[0].probabilities.Value()
+	return r.previous[0].probabilities.Value()
+}
+
+// AttackProbability return the probability the input is an attack
+func (r *RNN) AttackProbability(input []int) (float32, error) {
+	value := r.getProbabilities(input)
+	if t, ok := value.(tensor.Tensor); ok {
+		isAttack, err := t.At(0)
+		if err != nil {
+			return 0, err
+		}
+		probability, ok := isAttack.(float32)
+		if !ok {
+			return 0, fmt.Errorf("value is not float32")
+		}
+		return 100 * probability, nil
+	}
+
+	return 0, fmt.Errorf("not a tensor")
+}
+
+// IsAttack determines if an input is an attack
+func (r *RNN) IsAttack(input []int) bool {
+	value := r.getProbabilities(input)
 	if t, ok := value.(tensor.Tensor); ok {
 		max, err := tensor.Argmax(t, -1)
 		if err != nil {

@@ -217,7 +217,7 @@ func (d *DetectorMaker) Make() *Detector {
 }
 
 // Detect returns true if the input is a SQL injection attack
-func (d *Detector) Detect(a string) bool {
+func (d *Detector) Detect(a string) (float32, error) {
 	isNumber := true
 	for _, v := range a {
 		if !unicode.IsDigit(v) {
@@ -226,8 +226,8 @@ func (d *Detector) Detect(a string) bool {
 		}
 	}
 	if isNumber {
-		return false
+		return 0, nil
 	}
 	data := convert([]byte(strings.ToLower(a)))
-	return d.IsAttack(data)
+	return d.AttackProbability(data)
 }
