@@ -1072,7 +1072,7 @@ func TrainingDataGenerator(rnd *rand.Rand) []Generator {
 		{
 			Form: "||6",
 			Make: func() (sample string) {
-				sample += sampleOr()
+				sample += "||"
 				sample += sampleNumber(1337)
 				return
 			},

@@ -72,8 +72,11 @@ func generateTrainingData() (training, validation Examples) {
 	for s := 'a'; s <= 'z'; s++ {
 		symbols = append(symbols, s)
 	}
-	for i := 0; i < 128; i++ {
+	for i := 0; i < 2048; i++ {
 		left, size := "", 1+rnd.Intn(8)
+		if rnd.Intn(2) == 0 {
+			left += " "
+		}
 		for j := 0; j < size; j++ {
 			left += string(symbols[rnd.Intn(len(symbols))])
 		}
@@ -81,7 +84,18 @@ func generateTrainingData() (training, validation Examples) {
 		for j := 0; j < size; j++ {
 			right += string(symbols[rnd.Intn(len(symbols))])
 		}
-		example := left + "or" + right
+		if rnd.Intn(2) == 0 {
+			right += " "
+		}
+		example := ""
+		switch rnd.Intn(3) {
+		case 0:
+			example = left + "or" + right
+		case 1:
+			example = left + "or"
+		case 2:
+			example = "or" + right
+		}
 		training = append(training, Example{[]byte(strings.ToLower(example)), false})
 	}
 

@@ -9,51 +9,40 @@ import "testing"
 func TestDetector(t *testing.T) {
 	maker := NewDetectorMaker()
 	detector := maker.Make()
-	probability, err := detector.Detect("test or 1337=1337 --\"")
-	if err != nil {
-		t.Fatal(err)
+	detector.SkipRegex = true
+
+	attacks := []string{
+		"test or 1337=1337 --\"",
+		" or 1=1 ",
+		"/**/or/**/1337=1337",
 	}
-	if probability < 50 {
-		t.Fatal("should be a sql injection attack")
+	for _, s := range attacks {
+		probability, err := detector.Detect(s)
+		if err != nil {
+			t.Fatal(err)
+		}
+		if probability < 50 {
+			t.Fatal("should be a sql injection attack")
+		}
 	}
 
-	probability, err = detector.Detect("abc123")
-	if err != nil {
-		t.Fatal(err)
+	notAttacks := []string{
+		"abc123",
+		"abc123 123abc",
+		"123",
+		"abcorabc",
+		"available",
+		"orcat1",
+		"cat1or",
+		"cat1orcat1",
 	}
-	if probability > 50 {
-		t.Fatal("should not be a sql injection attack")
-	}
-
-	probability, err = detector.Detect("abc123 123abc")
-	if err != nil {
-		t.Fatal(err)
-	}
-	if probability > 50 {
-		t.Fatal("should not be a sql injection attack")
-	}
-
-	probability, err = detector.Detect("123")
-	if err != nil {
-		t.Fatal(err)
-	}
-	if probability > 50 {
-		t.Fatal("should not be a sql injection attack")
-	}
-
-	probability, err = detector.Detect("abcorabc")
-	if err != nil {
-		t.Fatal(err)
-	}
-	if probability > 50 {
-		t.Fatal("should not be a sql injection attack")
-	}
-
-	probability, err = detector.Detect("available")
-	if err != nil {
-		t.Fatal(err)
-	}
-	if probability > 50 {
-		t.Fatal("should not be a sql injection attack")
+	for _, s := range notAttacks {
+		probability, err := detector.Detect(s)
+		if err != nil {
+			t.Fatal(err)
+		}
+		if probability > 50 {
+			t.Fatal("should not be a sql injection attack")
+		}
 	}
 }
