@@ -6,6 +6,7 @@ package main
 
 import (
 	"bufio"
+	"encoding/csv"
 	"flag"
 	"fmt"
 	"math/rand"
@@ -194,13 +195,20 @@ func printChunks() {
 }
 
 var (
+	help   = flag.Bool("help", false, "print help")
 	chunks = flag.Bool("chunks", false, "generate chunks")
-	data   = flag.Bool("data", false, "print training data")
+	print  = flag.Bool("print", false, "print training data")
+	data   = flag.String("data", "", "use data for training")
 	epochs = flag.Int("epochs", 1, "the number of epochs for training")
 )
 
 func main() {
 	flag.Parse()
+	if *help {
+		flag.Usage()
+		return
+	}
+
 	rnd = rand.New(rand.NewSource(1))
 
 	if *chunks {
@@ -208,7 +216,7 @@ func main() {
 		return
 	}
 
-	if *data {
+	if *print {
 		generators := TrainingDataGenerator(rnd)
 		for _, generator := range generators {
 			fmt.Println(generator.Form)
@@ -236,6 +244,29 @@ func main() {
 	}
 
 	training, validation := generateTrainingData()
+	if *data != "" {
+		in, err1 := os.Open(*data)
+		if err1 != nil {
+			panic(err1)
+		}
+		defer in.Close()
+		var custom Examples
+		reader := csv.NewReader(in)
+		line, err1 := reader.Read()
+		for err1 != nil {
+			example := Example{
+				Data:   []byte(line[0]),
+				Attack: line[1] == "attack",
+			}
+			custom = append(custom, example)
+			line, err1 = reader.Read()
+		}
+		custom.Permute()
+		cutoff := (80 * len(custom)) / 100
+		training = append(training, custom[:cutoff]...)
+		validation = append(validation, custom[cutoff:]...)
+	}
+
 	fmt.Println(len(training))
 
 	networkRnd := rand.New(rand.NewSource(1))

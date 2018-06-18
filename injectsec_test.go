@@ -7,7 +7,10 @@ package injectsec
 import "testing"
 
 func TestDetector(t *testing.T) {
-	maker := NewDetectorMaker()
+	maker, err := NewDetectorMaker()
+	if err != nil {
+		t.Fatal(err)
+	}
 	detector := maker.Make()
 	detector.SkipRegex = true
 
