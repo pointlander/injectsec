@@ -198,6 +198,7 @@ var (
 	help   = flag.Bool("help", false, "print help")
 	chunks = flag.Bool("chunks", false, "generate chunks")
 	print  = flag.Bool("print", false, "print training data")
+	parts  = flag.Bool("parts", false, "test parts")
 	data   = flag.String("data", "", "use data for training")
 	epochs = flag.Int("epochs", 1, "the number of epochs for training")
 )
@@ -226,6 +227,16 @@ func main() {
 				}
 			}
 			fmt.Println()
+		}
+		return
+	}
+
+	if *parts {
+		generators := TrainingDataGenerator(rnd)
+		for _, generator := range generators {
+			if generator.Regex != nil {
+				generator.Regex()
+			}
 		}
 		return
 	}
