@@ -16,14 +16,22 @@ const (
 	PartTypeName
 	// PartTypeOr is a or part type with spaces
 	PartTypeOr
-	// PartTypeHexOr is a or parth type with hex sampleSpaces
+	// PartTypeHexOr is a or part type with hex spaces
 	PartTypeHexOr
+	// PartTypeAnd is a and part type with spaces
+	PartTypeAnd
 	// PartTypeSpaces represents spaces
 	PartTypeSpaces
+	// PartTypeSpacesOptional represents spaces or nothing
+	PartTypeSpacesOptional
 	// PartTypeObfuscated is an obfuscated string
 	PartTypeObfuscated
 	// PartTypeHex is a hex string
 	PartTypeHex
+	// PartTypeNumberList is a list of numbers
+	PartTypeNumberList
+	// PartTypeScientificNumber is a sciencetific number
+	PartTypeScientificNumber
 )
 
 // Part is part of a regex
@@ -107,9 +115,19 @@ func (p *Parts) AddHexOr() {
 	p.AddType(PartTypeHexOr)
 }
 
+// AddAnd adds a part type and
+func (p *Parts) AddAnd() {
+	p.AddType(PartTypeAnd)
+}
+
 // AddSpaces adds a part type spaces
 func (p *Parts) AddSpaces() {
 	p.AddType(PartTypeSpaces)
+}
+
+// AddSpacesOptional adds a part type spaces optional
+func (p *Parts) AddSpacesOptional() {
+	p.AddType(PartTypeSpacesOptional)
 }
 
 // AddHex adds a hex type
@@ -121,15 +139,24 @@ func (p *Parts) AddHex(max int) {
 	p.Parts = append(p.Parts, part)
 }
 
+// AddNumberList adds a list of numbers
+func (p *Parts) AddNumberList(max int) {
+	part := Part{
+		PartType: PartTypeNumberList,
+		Max:      max,
+	}
+	p.Parts = append(p.Parts, part)
+}
+
 // AddBenchmark add a SQL benchmark statement
 func (p *Parts) AddBenchmark() {
 	p.AddLiteral("benchmark(")
 	p.AddSpaces()
-	p.AddNumber(0, 10000000)
+	p.AddNumber(1024, 10000000)
 	p.AddSpaces()
 	p.AddLiteral(",MD5(")
 	p.AddSpaces()
-	p.AddNumber(1, 10000000)
+	p.AddNumber(1025, 10000000)
 	p.AddLiteral("))#")
 }
 
@@ -140,10 +167,10 @@ func (p *Parts) AddWaitfor() {
 	p.AddLiteral("delay")
 	p.AddSpaces()
 	p.AddLiteral("'")
-	p.AddNumber(0, 24)
+	p.AddNumber(1024, 24)
 	p.AddLiteral(":")
-	p.AddNumber(1, 60)
+	p.AddNumber(1025, 60)
 	p.AddLiteral(":")
-	p.AddNumber(2, 60)
+	p.AddNumber(1026, 60)
 	p.AddLiteral("'--")
 }

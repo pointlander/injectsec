@@ -169,9 +169,9 @@ func TrainingDataGenerator(rnd *rand.Rand) []Generator {
 			},
 			Regex: func() *Parts {
 				p := NewParts()
-				p.AddSpaces()
+				p.AddSpacesOptional()
 				p.AddLiteral("update")
-				p.AddSpaces()
+				p.AddSpacesOptional()
 				return p
 			},
 		},
@@ -295,9 +295,9 @@ func TrainingDataGenerator(rnd *rand.Rand) []Generator {
 			},
 			Regex: func() *Parts {
 				p := NewParts()
-				p.AddSpaces()
+				p.AddSpacesOptional()
 				p.AddLiteral("delete")
-				p.AddSpaces()
+				p.AddSpacesOptional()
 				return p
 			},
 		},
@@ -311,9 +311,9 @@ func TrainingDataGenerator(rnd *rand.Rand) []Generator {
 			},
 			Regex: func() *Parts {
 				p := NewParts()
-				p.AddSpaces()
+				p.AddSpacesOptional()
 				p.AddLiteral("like")
-				p.AddSpaces()
+				p.AddSpacesOptional()
 				return p
 			},
 		},
@@ -430,9 +430,9 @@ func TrainingDataGenerator(rnd *rand.Rand) []Generator {
 			},
 			Regex: func() *Parts {
 				p := NewParts()
-				p.AddSpaces()
+				p.AddSpacesOptional()
 				p.AddLiteral("insert")
-				p.AddSpaces()
+				p.AddSpacesOptional()
 				return p
 			},
 		},
@@ -534,6 +534,28 @@ func TrainingDataGenerator(rnd *rand.Rand) []Generator {
 				sample += "--"
 				return
 			},
+			Regex: func() *Parts {
+				p := NewParts()
+				p.AddLiteral("@")
+				p.AddName(0)
+				p.AddSpaces()
+				p.AddLiteral("select")
+				p.AddSpaces()
+				p.AddLiteral("@")
+				p.AddName(0)
+				p.AddSpaces()
+				p.AddLiteral("as")
+				p.AddSpaces()
+				p.AddName(0)
+				p.AddSpaces()
+				p.AddLiteral("into")
+				p.AddSpaces()
+				p.AddName(1)
+				p.AddSpaces()
+				p.AddLiteral("end")
+				p.AddSpaces()
+				return p
+			},
 		},
 		{
 			Form: "1)) or benchmark(10000000,MD5(1))#",
@@ -546,6 +568,14 @@ func TrainingDataGenerator(rnd *rand.Rand) []Generator {
 				sample += sampleBenchmark()
 				return
 			},
+			Regex: func() *Parts {
+				p := NewParts()
+				p.AddNumber(0, 1337)
+				p.AddLiteral("))")
+				p.AddOr()
+				p.AddBenchmark()
+				return p
+			},
 		},
 		{
 			Form: "asc",
@@ -555,6 +585,13 @@ func TrainingDataGenerator(rnd *rand.Rand) []Generator {
 				sample += sampleSpaces()
 				return
 			},
+			Regex: func() *Parts {
+				p := NewParts()
+				p.AddSpacesOptional()
+				p.AddLiteral("asc")
+				p.AddSpacesOptional()
+				return p
+			},
 		},
 		{
 			Form: "(||6)",
@@ -563,6 +600,13 @@ func TrainingDataGenerator(rnd *rand.Rand) []Generator {
 				sample += sampleNumber(1337)
 				sample += ")"
 				return
+			},
+			Regex: func() *Parts {
+				p := NewParts()
+				p.AddLiteral("(||")
+				p.AddNumber(0, 1337)
+				p.AddLiteral(")")
+				return p
 			},
 		},
 		{
@@ -581,6 +625,18 @@ func TrainingDataGenerator(rnd *rand.Rand) []Generator {
 				sample += "--\""
 				return
 			},
+			Regex: func() *Parts {
+				p := NewParts()
+				p.AddLiteral("\"")
+				p.AddName(0)
+				p.AddLiteral("\"\"")
+				p.AddOr()
+				p.AddNumber(1, 1337)
+				p.AddLiteral("=")
+				p.AddNumber(1, 1337)
+				p.AddLiteral("--\"")
+				return p
+			},
 		},
 		{
 			Form: "\" or benchmark(10000000,MD5(1))#",
@@ -592,6 +648,13 @@ func TrainingDataGenerator(rnd *rand.Rand) []Generator {
 				sample += sampleBenchmark()
 				return
 			},
+			Regex: func() *Parts {
+				p := NewParts()
+				p.AddLiteral("\"")
+				p.AddOr()
+				p.AddBenchmark()
+				return p
+			},
 		},
 		{
 			Form: "# from wapiti",
@@ -602,6 +665,15 @@ func TrainingDataGenerator(rnd *rand.Rand) []Generator {
 				sample += sampleSpaces()
 				sample += "wapiti"
 				return
+			},
+			Regex: func() *Parts {
+				p := NewParts()
+				p.AddLiteral("#")
+				p.AddSpaces()
+				p.AddLiteral("from")
+				p.AddSpaces()
+				p.AddLiteral("wapiti")
+				return p
 			},
 		},
 		{
@@ -617,6 +689,16 @@ func TrainingDataGenerator(rnd *rand.Rand) []Generator {
 				sample += sampleSpaces()
 				sample += "--"
 				return
+			},
+			Regex: func() *Parts {
+				p := NewParts()
+				p.AddOr()
+				p.AddNumber(0, 1337)
+				p.AddLiteral("=")
+				p.AddNumber(0, 1337)
+				p.AddSpaces()
+				p.AddLiteral("--")
+				return p
 			},
 		},
 		{
@@ -637,6 +719,23 @@ func TrainingDataGenerator(rnd *rand.Rand) []Generator {
 				sample += "'--"
 				return
 			},
+			Regex: func() *Parts {
+				p := NewParts()
+				p.AddNumber(0, 1337)
+				p.AddSpaces()
+				p.AddLiteral("waitfor")
+				p.AddSpaces()
+				p.AddLiteral("delay")
+				p.AddSpaces()
+				p.AddLiteral("'")
+				p.AddNumber(1, 24)
+				p.AddLiteral(":")
+				p.AddNumber(2, 60)
+				p.AddLiteral(":")
+				p.AddNumber(3, 60)
+				p.AddLiteral("'--")
+				return p
+			},
 		},
 		{
 			Form: " or 'a'='a",
@@ -651,6 +750,15 @@ func TrainingDataGenerator(rnd *rand.Rand) []Generator {
 				sample += name
 				return
 			},
+			Regex: func() *Parts {
+				p := NewParts()
+				p.AddOr()
+				p.AddLiteral("'")
+				p.AddName(0)
+				p.AddLiteral("'='")
+				p.AddName(0)
+				return p
+			},
 		},
 		{
 			Form: "hi or 1=1 --\"",
@@ -658,6 +766,7 @@ func TrainingDataGenerator(rnd *rand.Rand) []Generator {
 				sample += sampleName()
 				sample += sampleSpaces()
 				sample += sampleOr()
+				sample += sampleSpaces()
 				number := sampleNumber(1337)
 				sample += number
 				sample += "="
@@ -665,6 +774,17 @@ func TrainingDataGenerator(rnd *rand.Rand) []Generator {
 				sample += sampleSpaces()
 				sample += "--\""
 				return
+			},
+			Regex: func() *Parts {
+				p := NewParts()
+				p.AddName(0)
+				p.AddOr()
+				p.AddNumber(1, 1337)
+				p.AddLiteral("=")
+				p.AddNumber(1, 1337)
+				p.AddSpaces()
+				p.AddLiteral("--\"")
+				return p
 			},
 		},
 		{
@@ -680,6 +800,16 @@ func TrainingDataGenerator(rnd *rand.Rand) []Generator {
 				sample += name
 				return
 			},
+			Regex: func() *Parts {
+				p := NewParts()
+				p.AddOr()
+				p.AddName(0)
+				p.AddSpaces()
+				p.AddLiteral("=")
+				p.AddSpaces()
+				p.AddName(0)
+				return p
+			},
 		},
 		{
 			Form: " UNION ALL SELECT",
@@ -691,6 +821,16 @@ func TrainingDataGenerator(rnd *rand.Rand) []Generator {
 				sample += sampleSpaces()
 				sample += "select"
 				return
+			},
+			Regex: func() *Parts {
+				p := NewParts()
+				p.AddSpaces()
+				p.AddLiteral("union")
+				p.AddSpaces()
+				p.AddLiteral("all")
+				p.AddSpaces()
+				p.AddLiteral("select")
+				return p
 			},
 		},
 		{
@@ -706,6 +846,15 @@ func TrainingDataGenerator(rnd *rand.Rand) []Generator {
 				sample += ")='"
 				return
 			},
+			Regex: func() *Parts {
+				p := NewParts()
+				p.AddLiteral(")")
+				p.AddOr()
+				p.AddLiteral("sleep(")
+				p.AddNumber(0, 1337)
+				p.AddLiteral(")='")
+				return p
+			},
 		},
 		{
 			Form: ")) or benchmark(10000000,MD5(1))#",
@@ -717,6 +866,13 @@ func TrainingDataGenerator(rnd *rand.Rand) []Generator {
 				sample += sampleBenchmark()
 				sample += "#"
 				return
+			},
+			Regex: func() *Parts {
+				p := NewParts()
+				p.AddLiteral("))")
+				p.AddOr()
+				p.AddBenchmark()
+				return p
 			},
 		},
 		{
@@ -734,6 +890,17 @@ func TrainingDataGenerator(rnd *rand.Rand) []Generator {
 				sample += name
 				return
 			},
+			Regex: func() *Parts {
+				p := NewParts()
+				p.AddName(0)
+				p.AddLiteral("'")
+				p.AddOr()
+				p.AddLiteral("'")
+				p.AddName(1)
+				p.AddLiteral("'='")
+				p.AddName(1)
+				return p
+			},
 		},
 		{
 			Form: "0",
@@ -741,6 +908,11 @@ func TrainingDataGenerator(rnd *rand.Rand) []Generator {
 			Make: func() (sample string) {
 				sample += sampleNumber(1337)
 				return
+			},
+			Regex: func() *Parts {
+				p := NewParts()
+				p.AddNumber(0, 1337)
+				return p
 			},
 		},
 		{
@@ -751,6 +923,13 @@ func TrainingDataGenerator(rnd *rand.Rand) []Generator {
 				sample += "%"
 				return
 			},
+			Regex: func() *Parts {
+				p := NewParts()
+				p.AddNumber(0, 1337)
+				p.AddSpaces()
+				p.AddLiteral("%")
+				return p
+			},
 		},
 		{
 			Form: "limit",
@@ -759,6 +938,13 @@ func TrainingDataGenerator(rnd *rand.Rand) []Generator {
 				sample += "limit"
 				sample += sampleSpaces()
 				return
+			},
+			Regex: func() *Parts {
+				p := NewParts()
+				p.AddSpacesOptional()
+				p.AddLiteral("limit")
+				p.AddSpacesOptional()
+				return p
 			},
 		},
 		{
@@ -772,6 +958,14 @@ func TrainingDataGenerator(rnd *rand.Rand) []Generator {
 				sample += "="
 				sample += number
 				return
+			},
+			Regex: func() *Parts {
+				p := NewParts()
+				p.AddOr()
+				p.AddNumber(0, 1337)
+				p.AddLiteral("=")
+				p.AddNumber(0, 1337)
+				return p
 			},
 		},
 		{
@@ -792,6 +986,16 @@ func TrainingDataGenerator(rnd *rand.Rand) []Generator {
 				sample += sampleNumber(max)
 				return
 			},
+			Regex: func() *Parts {
+				p := NewParts()
+				p.AddOr()
+				p.AddNumber(0, 1337)
+				p.AddSpaces()
+				p.AddLiteral(">")
+				p.AddSpaces()
+				p.AddNumber(0, 1337)
+				return p
+			},
 		},
 		{
 			Form: "\")) or benchmark(10000000,MD5(1))#",
@@ -804,6 +1008,13 @@ func TrainingDataGenerator(rnd *rand.Rand) []Generator {
 				sample += "#"
 				return
 			},
+			Regex: func() *Parts {
+				p := NewParts()
+				p.AddLiteral("\"))")
+				p.AddOr()
+				p.AddBenchmark()
+				return p
+			},
 		},
 		{
 			Form: "PRINT",
@@ -812,6 +1023,13 @@ func TrainingDataGenerator(rnd *rand.Rand) []Generator {
 				sample += "print"
 				sample += sampleSpaces()
 				return
+			},
+			Regex: func() *Parts {
+				p := NewParts()
+				p.AddSpacesOptional()
+				p.AddLiteral("print")
+				p.AddSpacesOptional()
+				return p
 			},
 		},
 		{
@@ -829,6 +1047,17 @@ func TrainingDataGenerator(rnd *rand.Rand) []Generator {
 				sample += name
 				return
 			},
+			Regex: func() *Parts {
+				p := NewParts()
+				p.AddName(0)
+				p.AddLiteral("')")
+				p.AddOr()
+				p.AddLiteral("('")
+				p.AddName(1)
+				p.AddLiteral("'='")
+				p.AddName(1)
+				return p
+			},
 		},
 		{
 			Form: " or 3=3",
@@ -841,6 +1070,14 @@ func TrainingDataGenerator(rnd *rand.Rand) []Generator {
 				sample += "="
 				sample += number
 				return
+			},
+			Regex: func() *Parts {
+				p := NewParts()
+				p.AddOr()
+				p.AddNumber(0, 1337)
+				p.AddLiteral("=")
+				p.AddNumber(0, 1337)
+				return p
 			},
 		},
 		{
@@ -859,6 +1096,12 @@ func TrainingDataGenerator(rnd *rand.Rand) []Generator {
 				sample += sampleNumber(60)
 				sample += "'--'"
 				return
+			},
+			Regex: func() *Parts {
+				p := NewParts()
+				p.AddLiteral("))")
+				p.AddWaitfor()
+				return p
 			},
 		},
 		{
@@ -880,6 +1123,24 @@ func TrainingDataGenerator(rnd *rand.Rand) []Generator {
 				sample += "'--"
 				return
 			},
+			Regex: func() *Parts {
+				p := NewParts()
+				p.AddName(0)
+				p.AddLiteral("'")
+				p.AddSpaces()
+				p.AddLiteral("waitfor")
+				p.AddSpaces()
+				p.AddLiteral("delay")
+				p.AddSpaces()
+				p.AddLiteral("'")
+				p.AddNumber(1, 24)
+				p.AddLiteral(":")
+				p.AddNumber(2, 60)
+				p.AddLiteral(":")
+				p.AddNumber(3, 60)
+				p.AddLiteral("'--")
+				return p
+			},
 		},
 		{
 			Form:     "1;(load_file(char(47,101,116,99,47,112,97,115, ...",
@@ -895,6 +1156,14 @@ func TrainingDataGenerator(rnd *rand.Rand) []Generator {
 				sample += ")))"
 				return
 			},
+			Regex: func() *Parts {
+				p := NewParts()
+				p.AddNumber(0, 256)
+				p.AddLiteral(";(load_file(char(")
+				p.AddNumberList(256)
+				p.AddLiteral(")))")
+				return p
+			},
 		},
 		{
 			Form: "or%201=1",
@@ -906,6 +1175,14 @@ func TrainingDataGenerator(rnd *rand.Rand) []Generator {
 				sample += "="
 				sample += number
 				return
+			},
+			Regex: func() *Parts {
+				p := NewParts()
+				p.AddHexOr()
+				p.AddNumber(0, 1337)
+				p.AddLiteral("=")
+				p.AddNumber(0, 1337)
+				return p
 			},
 		},
 		{
@@ -921,6 +1198,17 @@ func TrainingDataGenerator(rnd *rand.Rand) []Generator {
 				sample += ")#"
 				return
 			},
+			Regex: func() *Parts {
+				p := NewParts()
+				p.AddNumber(0, 1337)
+				p.AddOr()
+				p.AddLiteral("sleep(")
+				p.AddSpaces()
+				p.AddNumber(1, 1337)
+				p.AddSpaces()
+				p.AddLiteral(")#")
+				return p
+			},
 		},
 		{
 			Form: "or 1=1",
@@ -932,6 +1220,14 @@ func TrainingDataGenerator(rnd *rand.Rand) []Generator {
 				sample += "="
 				sample += number
 				return
+			},
+			Regex: func() *Parts {
+				p := NewParts()
+				p.AddOr()
+				p.AddNumber(0, 1337)
+				p.AddLiteral("=")
+				p.AddNumber(0, 1337)
+				return p
 			},
 		},
 		{
@@ -954,6 +1250,23 @@ func TrainingDataGenerator(rnd *rand.Rand) []Generator {
 				sample += ")--"
 				return
 			},
+			Regex: func() *Parts {
+				p := NewParts()
+				p.AddAnd()
+				p.AddNumber(0, 1337)
+				p.AddSpaces()
+				p.AddLiteral("in")
+				p.AddSpaces()
+				p.AddLiteral("(select")
+				p.AddSpaces()
+				p.AddName(1)
+				p.AddSpaces()
+				p.AddLiteral("from")
+				p.AddSpaces()
+				p.AddName(2)
+				p.AddLiteral(")--")
+				return p
+			},
 		},
 		{
 			Form: " or '7659'='7659",
@@ -967,6 +1280,15 @@ func TrainingDataGenerator(rnd *rand.Rand) []Generator {
 				sample += "'='"
 				sample += number
 				return
+			},
+			Regex: func() *Parts {
+				p := NewParts()
+				p.AddOr()
+				p.AddLiteral("'")
+				p.AddNumber(0, 1337)
+				p.AddLiteral("'='")
+				p.AddNumber(0, 1337)
+				return p
 			},
 		},
 		{
@@ -987,6 +1309,20 @@ func TrainingDataGenerator(rnd *rand.Rand) []Generator {
 				sample += "'"
 				return
 			},
+			Regex: func() *Parts {
+				p := NewParts()
+				p.AddOr()
+				p.AddLiteral("'")
+				p.AddName(0)
+				p.AddLiteral("'")
+				p.AddSpaces()
+				p.AddLiteral("=")
+				p.AddSpaces()
+				p.AddLiteral("n'")
+				p.AddName(0)
+				p.AddLiteral("'")
+				return p
+			},
 		},
 		{
 			Form: " --",
@@ -994,6 +1330,12 @@ func TrainingDataGenerator(rnd *rand.Rand) []Generator {
 				sample += sampleSpaces()
 				sample += "--"
 				return
+			},
+			Regex: func() *Parts {
+				p := NewParts()
+				p.AddSpacesOptional()
+				p.AddLiteral("--")
+				return p
 			},
 		},
 		{
@@ -1011,6 +1353,16 @@ func TrainingDataGenerator(rnd *rand.Rand) []Generator {
 				sample += sampleSpaces()
 				sample += "''='"
 				return
+			},
+			Regex: func() *Parts {
+				p := NewParts()
+				p.AddOr()
+				p.AddNumber(0, 1337)
+				p.AddLiteral("=")
+				p.AddNumber(0, 1337)
+				p.AddOr()
+				p.AddLiteral("''='")
+				return p
 			},
 		},
 		{
@@ -1039,6 +1391,29 @@ func TrainingDataGenerator(rnd *rand.Rand) []Generator {
 				sample += sampleHex(1337 * 1337)
 				return
 			},
+			Regex: func() *Parts {
+				p := NewParts()
+				p.AddLiteral("declare")
+				p.AddSpaces()
+				p.AddLiteral("@")
+				p.AddName(0)
+				p.AddSpaces()
+				p.AddLiteral("varchar")
+				p.AddSpaces()
+				p.AddLiteral("(")
+				p.AddNumber(1, 200)
+				p.AddLiteral(")")
+				p.AddSpaces()
+				p.AddLiteral("select")
+				p.AddSpaces()
+				p.AddLiteral("@")
+				p.AddName(0)
+				p.AddSpaces()
+				p.AddLiteral("=")
+				p.AddSpaces()
+				p.AddHex(1337 * 1337)
+				return p
+			},
 		},
 		{
 			Form: "exec xp",
@@ -1047,6 +1422,13 @@ func TrainingDataGenerator(rnd *rand.Rand) []Generator {
 				sample += sampleSpaces()
 				sample += sampleName()
 				return
+			},
+			Regex: func() *Parts {
+				p := NewParts()
+				p.AddLiteral("exec")
+				p.AddSpaces()
+				p.AddName(0)
+				return p
 			},
 		},
 		{
@@ -1070,6 +1452,26 @@ func TrainingDataGenerator(rnd *rand.Rand) []Generator {
 				sample += "'--"
 				return
 			},
+			Regex: func() *Parts {
+				p := NewParts()
+				p.AddLiteral(";")
+				p.AddSpaces()
+				p.AddLiteral("exec")
+				p.AddSpaces()
+				p.AddLiteral("master..xp_cmdshell")
+				p.AddSpaces()
+				p.AddLiteral("'ping")
+				p.AddSpaces()
+				p.AddNumber(0, 256)
+				p.AddLiteral(".")
+				p.AddNumber(1, 256)
+				p.AddLiteral(".")
+				p.AddNumber(2, 256)
+				p.AddLiteral(".")
+				p.AddNumber(3, 256)
+				p.AddLiteral("'--")
+				return p
+			},
 		},
 		{
 			Form: "3.10E+17",
@@ -1077,6 +1479,11 @@ func TrainingDataGenerator(rnd *rand.Rand) []Generator {
 				const factor = 1337 * 1337
 				sample += fmt.Sprintf("%E", rnd.Float64()*factor-factor/2)
 				return
+			},
+			Regex: func() *Parts {
+				p := NewParts()
+				p.AddType(PartTypeScientificNumber)
+				return p
 			},
 		},
 		{
@@ -1086,10 +1493,20 @@ func TrainingDataGenerator(rnd *rand.Rand) []Generator {
 				sample += "\""
 				sample += sampleSpaces()
 				sample += sampleOr()
+				sample += sampleSpaces()
 				sample += "pg_sleep("
 				sample += sampleNumber(1337)
 				sample += ")--"
 				return
+			},
+			Regex: func() *Parts {
+				p := NewParts()
+				p.AddLiteral("\"")
+				p.AddOr()
+				p.AddLiteral("pg_sleep(")
+				p.AddNumber(0, 1337)
+				p.AddLiteral(")--")
+				return p
 			},
 		},
 		{
@@ -1109,6 +1526,20 @@ func TrainingDataGenerator(rnd *rand.Rand) []Generator {
 				sample += "--"
 				return
 			},
+			Regex: func() *Parts {
+				p := NewParts()
+				p.AddName(0)
+				p.AddLiteral("'")
+				p.AddAnd()
+				p.AddName(1)
+				p.AddSpaces()
+				p.AddLiteral("is")
+				p.AddSpaces()
+				p.AddLiteral("null;")
+				p.AddSpaces()
+				p.AddLiteral("--")
+				return p
+			},
 		},
 		{
 			Form: "&",
@@ -1117,6 +1548,13 @@ func TrainingDataGenerator(rnd *rand.Rand) []Generator {
 				sample += "&"
 				sample += sampleSpaces()
 				return
+			},
+			Regex: func() *Parts {
+				p := NewParts()
+				p.AddSpacesOptional()
+				p.AddLiteral("&")
+				p.AddSpacesOptional()
+				return p
 			},
 		},
 		{
@@ -1129,6 +1567,14 @@ func TrainingDataGenerator(rnd *rand.Rand) []Generator {
 				sample += sampleSpaces()
 				sample += "'"
 				return
+			},
+			Regex: func() *Parts {
+				p := NewParts()
+				p.AddName(0)
+				p.AddLiteral("'")
+				p.AddOr()
+				p.AddLiteral("'")
+				return p
 			},
 		},
 		{
@@ -1148,6 +1594,20 @@ func TrainingDataGenerator(rnd *rand.Rand) []Generator {
 				sample += "'"
 				return
 			},
+			Regex: func() *Parts {
+				p := NewParts()
+				p.AddOr()
+				p.AddLiteral("'")
+				p.AddName(0)
+				p.AddLiteral("'")
+				p.AddSpaces()
+				p.AddLiteral("=")
+				p.AddSpaces()
+				p.AddLiteral("'")
+				p.AddName(0)
+				p.AddLiteral("'")
+				return p
+			},
 		},
 		{
 			Form: "//",
@@ -1157,6 +1617,13 @@ func TrainingDataGenerator(rnd *rand.Rand) []Generator {
 				sample += sampleSpaces()
 				return
 			},
+			Regex: func() *Parts {
+				p := NewParts()
+				p.AddSpacesOptional()
+				p.AddLiteral("//")
+				p.AddSpacesOptional()
+				return p
+			},
 		},
 		{
 			Form: "truncate",
@@ -1165,6 +1632,13 @@ func TrainingDataGenerator(rnd *rand.Rand) []Generator {
 				sample += "truncate"
 				sample += sampleSpaces()
 				return
+			},
+			Regex: func() *Parts {
+				p := NewParts()
+				p.AddSpacesOptional()
+				p.AddLiteral("truncate")
+				p.AddSpacesOptional()
+				return p
 			},
 		},
 		{
@@ -1176,8 +1650,15 @@ func TrainingDataGenerator(rnd *rand.Rand) []Generator {
 				sample += sampleOr()
 				sample += sampleSpaces()
 				sample += sampleBenchmark()
-				sample += "#"
 				return
+			},
+			Regex: func() *Parts {
+				p := NewParts()
+				p.AddNumber(0, 1337)
+				p.AddLiteral(")")
+				p.AddOr()
+				p.AddBenchmark()
+				return p
 			},
 		},
 		{
@@ -1187,6 +1668,13 @@ func TrainingDataGenerator(rnd *rand.Rand) []Generator {
 				sample += sampleSpaces()
 				sample += "select"
 				return
+			},
+			Regex: func() *Parts {
+				p := NewParts()
+				p.AddLiteral("\x27union")
+				p.AddSpaces()
+				p.AddLiteral("select")
+				return p
 			},
 		},
 		{
@@ -1213,6 +1701,27 @@ func TrainingDataGenerator(rnd *rand.Rand) []Generator {
 				sample += sampleHex(1337 * 1337)
 				return
 			},
+			Regex: func() *Parts {
+				p := NewParts()
+				p.AddLiteral("declare")
+				p.AddSpaces()
+				p.AddLiteral("@")
+				p.AddName(0)
+				p.AddSpaces()
+				p.AddLiteral("varchar(")
+				p.AddNumber(1, 200)
+				p.AddLiteral(")")
+				p.AddSpaces()
+				p.AddLiteral("select")
+				p.AddSpaces()
+				p.AddLiteral("@")
+				p.AddName(0)
+				p.AddSpaces()
+				p.AddLiteral("=")
+				p.AddSpaces()
+				p.AddHex(1337 * 1337)
+				return p
+			},
 		},
 		{
 			Form: "tz_offset",
@@ -1222,6 +1731,13 @@ func TrainingDataGenerator(rnd *rand.Rand) []Generator {
 				sample += sampleSpaces()
 				return
 			},
+			Regex: func() *Parts {
+				p := NewParts()
+				p.AddSpacesOptional()
+				p.AddLiteral("tz_offset")
+				p.AddSpacesOptional()
+				return p
+			},
 		},
 		{
 			Form: "sqlvuln",
@@ -1230,6 +1746,13 @@ func TrainingDataGenerator(rnd *rand.Rand) []Generator {
 				sample += "sqlvuln"
 				sample += sampleSpaces()
 				return
+			},
+			Regex: func() *Parts {
+				p := NewParts()
+				p.AddSpacesOptional()
+				p.AddLiteral("sqlvuln")
+				p.AddSpacesOptional()
+				return p
 			},
 		},
 		{
@@ -1249,6 +1772,12 @@ func TrainingDataGenerator(rnd *rand.Rand) []Generator {
 				sample += "'--"
 				return
 			},
+			Regex: func() *Parts {
+				p := NewParts()
+				p.AddLiteral("\"))")
+				p.AddWaitfor()
+				return p
+			},
 		},
 		{
 			Form: "||6",
@@ -1256,6 +1785,12 @@ func TrainingDataGenerator(rnd *rand.Rand) []Generator {
 				sample += "||"
 				sample += sampleNumber(1337)
 				return
+			},
+			Regex: func() *Parts {
+				p := NewParts()
+				p.AddOr()
+				p.AddNumber(0, 1337)
+				return p
 			},
 		},
 		{
@@ -1271,6 +1806,16 @@ func TrainingDataGenerator(rnd *rand.Rand) []Generator {
 				sample += "--"
 				return
 			},
+			Regex: func() *Parts {
+				p := NewParts()
+				p.AddHexOr()
+				p.AddNumber(0, 1337)
+				p.AddLiteral("=")
+				p.AddNumber(0, 1337)
+				p.AddSpaces()
+				p.AddLiteral("--")
+				return p
+			},
 		},
 		{
 			Form: "%2A%28%7C%28objectclass%3D%2A%29%29",
@@ -1279,6 +1824,13 @@ func TrainingDataGenerator(rnd *rand.Rand) []Generator {
 				sample += "%2A%28%7C%28objectclass%3D%2A%29%29"
 				sample += sampleSpaces()
 				return
+			},
+			Regex: func() *Parts {
+				p := NewParts()
+				p.AddSpacesOptional()
+				p.AddLiteral("%2A%28%7C%28objectclass%3D%2A%29%29")
+				p.AddSpacesOptional()
+				return p
 			},
 		},
 		{
@@ -1291,6 +1843,15 @@ func TrainingDataGenerator(rnd *rand.Rand) []Generator {
 				sample += "="
 				sample += name
 				return
+			},
+			Regex: func() *Parts {
+				p := NewParts()
+				p.AddOr()
+				p.AddSpaces()
+				p.AddName(0)
+				p.AddLiteral("=")
+				p.AddName(0)
+				return p
 			},
 		},
 		{
