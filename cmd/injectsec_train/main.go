@@ -232,12 +232,14 @@ func main() {
 	}
 
 	if *parts {
-		generators := TrainingDataGenerator(rnd)
+		generators, count := TrainingDataGenerator(rnd), 0
 		for _, generator := range generators {
 			if generator.Regex != nil {
 				generator.Regex()
+				count++
 			}
 		}
+		fmt.Println(count)
 		return
 	}
 

@@ -24,6 +24,10 @@ const (
 	PartTypeSpaces
 	// PartTypeSpacesOptional represents spaces or nothing
 	PartTypeSpacesOptional
+	// PartTypeHexSpaces represents hex spaces
+	PartTypeHexSpaces
+	// PartTypeComment represents a comment
+	PartTypeComment
 	// PartTypeObfuscated is an obfuscated string
 	PartTypeObfuscated
 	// PartTypeHex is a hex string
@@ -32,6 +36,8 @@ const (
 	PartTypeNumberList
 	// PartTypeScientificNumber is a sciencetific number
 	PartTypeScientificNumber
+	// PartTypeSQL is a sql part type
+	PartTypeSQL
 )
 
 // Part is part of a regex
@@ -130,6 +136,16 @@ func (p *Parts) AddSpacesOptional() {
 	p.AddType(PartTypeSpacesOptional)
 }
 
+// AddHexSpaces adds a part type hex spaces
+func (p *Parts) AddHexSpaces() {
+	p.AddType(PartTypeHexSpaces)
+}
+
+// AddComment adds a part type comment
+func (p *Parts) AddComment() {
+	p.AddType(PartTypeComment)
+}
+
 // AddHex adds a hex type
 func (p *Parts) AddHex(max int) {
 	part := Part{
@@ -173,4 +189,9 @@ func (p *Parts) AddWaitfor() {
 	p.AddLiteral(":")
 	p.AddNumber(1026, 60)
 	p.AddLiteral("'--")
+}
+
+// AddSQL adds a part type SQL
+func (p *Parts) AddSQL() {
+	p.AddType(PartTypeSQL)
 }
