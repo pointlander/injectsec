@@ -30,6 +30,8 @@ const (
 	PartTypeComment
 	// PartTypeObfuscated is an obfuscated string
 	PartTypeObfuscated
+	// PartTypeObfuscatedWithComments is an comment obfuscated string
+	PartTypeObfuscatedWithComments
 	// PartTypeHex is a hex string
 	PartTypeHex
 	// PartTypeNumberList is a list of numbers
