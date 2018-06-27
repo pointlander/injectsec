@@ -11,6 +11,7 @@ import (
 	"fmt"
 	"math/rand"
 	"os"
+	"regexp"
 	"sort"
 	"strings"
 
@@ -232,14 +233,31 @@ func main() {
 	}
 
 	if *parts {
-		generators, count := TrainingDataGenerator(rnd), 0
+		generators, count, attempts, nomatch := TrainingDataGenerator(rnd), 0, 0, 0
 		for _, generator := range generators {
 			if generator.Regex != nil {
-				generator.Regex()
+				parts := generator.Regex()
+				exp, err := parts.Regex()
+				if err == nil {
+					regex, err := regexp.Compile(exp)
+					if err != nil {
+						panic(err)
+					}
+					if !generator.Abstract {
+						form := strings.ToLower(generator.Form)
+						attempts++
+						if !regex.MatchString(form) {
+							nomatch++
+							fmt.Println(exp)
+							fmt.Println(form)
+							fmt.Println()
+						}
+					}
+				}
 				count++
 			}
 		}
-		fmt.Println(count)
+		fmt.Println(count, attempts, nomatch)
 		return
 	}
 

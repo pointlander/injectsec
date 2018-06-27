@@ -554,6 +554,7 @@ func TrainingDataGenerator(rnd *rand.Rand) []Generator {
 				p.AddSpaces()
 				p.AddLiteral("end")
 				p.AddSpaces()
+				p.AddLiteral("--")
 				return p
 			},
 		},
@@ -1740,7 +1741,8 @@ func TrainingDataGenerator(rnd *rand.Rand) []Generator {
 			},
 		},
 		{
-			Form: "sqlvuln",
+			Form:     "sqlvuln",
+			Abstract: true,
 			Make: func() (sample string) {
 				sample += sampleSpaces()
 				sample += "sqlvuln"
@@ -1847,7 +1849,6 @@ func TrainingDataGenerator(rnd *rand.Rand) []Generator {
 			Regex: func() *Parts {
 				p := NewParts()
 				p.AddOr()
-				p.AddSpaces()
 				p.AddName(0)
 				p.AddLiteral("=")
 				p.AddName(0)
@@ -1865,7 +1866,7 @@ func TrainingDataGenerator(rnd *rand.Rand) []Generator {
 				sample += sampleSpaces()
 				sample += "*"
 				sample += sampleSpaces()
-				sample += "form"
+				sample += "from"
 				sample += sampleSpaces()
 				sample += "information_schema.tables;"
 				return
@@ -1880,7 +1881,7 @@ func TrainingDataGenerator(rnd *rand.Rand) []Generator {
 				p.AddSpaces()
 				p.AddLiteral("*")
 				p.AddSpaces()
-				p.AddLiteral("form")
+				p.AddLiteral("from")
 				p.AddSpaces()
 				p.AddLiteral("information_schema.tables;")
 				return p
@@ -1975,7 +1976,8 @@ func TrainingDataGenerator(rnd *rand.Rand) []Generator {
 			},
 		},
 		{
-			Form: "(sqlvuln)",
+			Form:     "(sqlvuln)",
+			Abstract: true,
 			Make: func() (sample string) {
 				sample += sampleSpaces()
 				sample += "(sqlvuln)"
@@ -2097,6 +2099,7 @@ func TrainingDataGenerator(rnd *rand.Rand) []Generator {
 				sample += "'sleep"
 				sample += sampleHexSpaces()
 				sample += sampleNumber(1337)
+				sample += "'"
 				return
 			},
 			Regex: func() *Parts {
@@ -2105,6 +2108,7 @@ func TrainingDataGenerator(rnd *rand.Rand) []Generator {
 				p.AddLiteral("'sleep")
 				p.AddHexSpaces()
 				p.AddNumber(0, 1337)
+				p.AddLiteral("'")
 				return p
 			},
 		},
@@ -2229,7 +2233,8 @@ func TrainingDataGenerator(rnd *rand.Rand) []Generator {
 			},
 		},
 		{
-			Form: "(sqlattempt2)",
+			Form:     "(sqlattempt2)",
+			Abstract: true,
 			Regex: func() *Parts {
 				p := NewParts()
 				p.AddSpacesOptional()
@@ -2580,7 +2585,7 @@ func TrainingDataGenerator(rnd *rand.Rand) []Generator {
 			},
 			Regex: func() *Parts {
 				p := NewParts()
-				p.AddSpaces()
+				p.AddSpacesOptional()
 				p.AddLiteral("exec(@")
 				p.AddName(0)
 				p.AddLiteral(")")
@@ -2709,6 +2714,7 @@ func TrainingDataGenerator(rnd *rand.Rand) []Generator {
 			Form: "a' or 'a' = 'a",
 			Make: func() (sample string) {
 				sample += sampleName()
+				sample += "'"
 				sample += sampleSpaces()
 				sample += sampleOr()
 				sample += sampleSpaces()
@@ -2726,7 +2732,7 @@ func TrainingDataGenerator(rnd *rand.Rand) []Generator {
 			Regex: func() *Parts {
 				p := NewParts()
 				p.AddName(0)
-				p.AddSpaces()
+				p.AddLiteral("'")
 				p.AddOr()
 				p.AddLiteral("'")
 				p.AddName(1)
@@ -3299,7 +3305,7 @@ func TrainingDataGenerator(rnd *rand.Rand) []Generator {
 				p.AddLiteral("*")
 				p.AddSpacesOptional()
 				p.AddLiteral("/*")
-				p.AddSpaces()
+				p.AddSpacesOptional()
 				return p
 			},
 		},
@@ -3991,6 +3997,7 @@ func TrainingDataGenerator(rnd *rand.Rand) []Generator {
 			},
 			Regex: func() *Parts {
 				p := NewParts()
+				p.AddName(0)
 				p.AddLiteral("'")
 				p.AddAnd()
 				p.AddLiteral("1=(select")
@@ -3999,7 +4006,7 @@ func TrainingDataGenerator(rnd *rand.Rand) []Generator {
 				p.AddSpaces()
 				p.AddLiteral("from")
 				p.AddSpaces()
-				p.AddName(0)
+				p.AddName(1)
 				p.AddLiteral(");")
 				p.AddSpaces()
 				p.AddLiteral("--")
@@ -4596,16 +4603,17 @@ func TrainingDataGenerator(rnd *rand.Rand) []Generator {
 			},
 			Regex: func() *Parts {
 				p := NewParts()
-				p.AddHexSpaces()
+				p.AddHexSpacesOptional()
 				p.AddLiteral("%2A%28%7C%28")
 				p.AddName(0)
 				p.AddLiteral("%3D%2A%29%29")
-				p.AddHexSpaces()
+				p.AddHexSpacesOptional()
 				return p
 			},
 		},
 		{
-			Form: "+sqlvuln",
+			Form:     "+sqlvuln",
+			Abstract: true,
 			Make: func() (sample string) {
 				sample += "+"
 				sample += sampleName()
@@ -4727,7 +4735,8 @@ func TrainingDataGenerator(rnd *rand.Rand) []Generator {
 			},
 		},
 		{
-			Form: "sqlvuln;",
+			Form:     "sqlvuln;",
+			Abstract: true,
 			Make: func() (sample string) {
 				sample += sampleName()
 				sample += ";"
@@ -5562,6 +5571,7 @@ func TrainingDataGenerator(rnd *rand.Rand) []Generator {
 			},
 			Regex: func() *Parts {
 				p := NewParts()
+				p.AddLiteral("'")
 				p.AddOr()
 				p.AddNumber(0, 1337)
 				p.AddLiteral("=")
@@ -5833,7 +5843,7 @@ func TrainingDataGenerator(rnd *rand.Rand) []Generator {
 				sample += name
 				sample += "'='"
 				sample += name
-				sample += "'"
+				sample += "';"
 				return
 			},
 			Regex: func() *Parts {
@@ -5846,7 +5856,7 @@ func TrainingDataGenerator(rnd *rand.Rand) []Generator {
 				p.AddName(1)
 				p.AddLiteral("'='")
 				p.AddName(1)
-				p.AddLiteral("'")
+				p.AddLiteral("';")
 				return p
 			},
 		},
@@ -6022,9 +6032,9 @@ func TrainingDataGenerator(rnd *rand.Rand) []Generator {
 			Regex: func() *Parts {
 				p := NewParts()
 				p.AddLiteral("--")
-				p.AddSpaces()
+				p.AddSpacesOptional()
 				p.AddLiteral("sp_password")
-				p.AddSpaces()
+				p.AddSpacesOptional()
 				return p
 			},
 		},
@@ -6178,7 +6188,8 @@ func TrainingDataGenerator(rnd *rand.Rand) []Generator {
 			},
 		},
 		{
-			Form: "'sqlattempt1",
+			Form:     "'sqlattempt1",
+			Abstract: true,
 			Make: func() (sample string) {
 				sample += "'"
 				sample += sampleName()
@@ -6280,6 +6291,7 @@ func TrainingDataGenerator(rnd *rand.Rand) []Generator {
 				p.AddNumber(1, 1337)
 				p.AddLiteral("=")
 				p.AddNumber(1, 1337)
+				p.AddSpaces()
 				p.AddLiteral("--")
 				return p
 			},

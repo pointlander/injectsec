@@ -4,6 +4,17 @@
 
 package main
 
+import (
+	"fmt"
+	"regexp"
+	"strings"
+)
+
+var (
+	// ErrorNotSupported means the part type is not supported
+	ErrorNotSupported = fmt.Errorf("part type is not supported")
+)
+
 // PartType is a type of a part
 type PartType int
 
@@ -26,6 +37,8 @@ const (
 	PartTypeSpacesOptional
 	// PartTypeHexSpaces represents hex spaces
 	PartTypeHexSpaces
+	// PartTypeHexSpaces represents hex spaces or nothing
+	PartTypeHexSpacesOptional
 	// PartTypeComment represents a comment
 	PartTypeComment
 	// PartTypeObfuscated is an obfuscated string
@@ -95,7 +108,7 @@ func (p *Parts) AddLiteral(literal string) {
 // AddNumber adds a literal to the parts
 func (p *Parts) AddNumber(variable, max int) {
 	part := Part{
-		PartType: PartTypeLiteral,
+		PartType: PartTypeNumber,
 		Variable: variable,
 		Max:      max,
 	}
@@ -143,6 +156,11 @@ func (p *Parts) AddHexSpaces() {
 	p.AddType(PartTypeHexSpaces)
 }
 
+// AddHexSpaces adds a part type hex spaces optional
+func (p *Parts) AddHexSpacesOptional() {
+	p.AddType(PartTypeHexSpacesOptional)
+}
+
 // AddComment adds a part type comment
 func (p *Parts) AddComment() {
 	p.AddType(PartTypeComment)
@@ -169,12 +187,13 @@ func (p *Parts) AddNumberList(max int) {
 // AddBenchmark add a SQL benchmark statement
 func (p *Parts) AddBenchmark() {
 	p.AddLiteral("benchmark(")
-	p.AddSpaces()
+	p.AddSpacesOptional()
 	p.AddNumber(1024, 10000000)
-	p.AddSpaces()
+	p.AddSpacesOptional()
 	p.AddLiteral(",MD5(")
-	p.AddSpaces()
+	p.AddSpacesOptional()
 	p.AddNumber(1025, 10000000)
+	p.AddSpacesOptional()
 	p.AddLiteral("))#")
 }
 
@@ -196,4 +215,88 @@ func (p *Parts) AddWaitfor() {
 // AddSQL adds a part type SQL
 func (p *Parts) AddSQL() {
 	p.AddType(PartTypeSQL)
+}
+
+// Regex generates a regex from the parts
+func (p *Parts) Regex() (string, error) {
+	last, regex := len(p.Parts)-1, ""
+	for i, part := range p.Parts {
+		switch part.PartType {
+		case PartTypeLiteral:
+			regex += regexp.QuoteMeta(strings.ToLower(part.Literal))
+		case PartTypeNumber:
+			regex += "-?[[:digit:]]+([[:space:]]*[+\\-*/][[:space:]]*-?[[:digit:]]+)*"
+		case PartTypeName:
+			regex += "[\\p{L}_\\p{Cc}][\\p{L}\\p{N}_\\p{Cc}]*"
+		case PartTypeOr:
+			a := ""
+			if i == 0 {
+				a += "[[:space:]]*"
+			} else {
+				a += "[[:space:]]+"
+			}
+			a += "or"
+			if i == last {
+				a += "[[:space:]]*"
+			} else {
+				a += "[[:space:]]+"
+			}
+			b := "[[:space:]]*" + regexp.QuoteMeta("||") + "[[:space:]]*"
+			regex += "((" + a + ")|(" + b + "))"
+		case PartTypeHexOr:
+			hex := "(" + regexp.QuoteMeta("%20") + ")"
+			a := ""
+			if i == 0 {
+				a += hex + "*"
+			} else {
+				a += hex + "+"
+			}
+			a += "or"
+			if i == last {
+				a += hex + "*"
+			} else {
+				a += hex + "+"
+			}
+			b := hex + "*" + regexp.QuoteMeta("||") + hex + "*"
+			regex += "((" + a + ")|(" + b + "))"
+		case PartTypeAnd:
+			a := ""
+			if i == 0 {
+				a += "[[:space:]]*"
+			} else {
+				a += "[[:space:]]+"
+			}
+			a += "and"
+			if i == last {
+				a += "[[:space:]]*"
+			} else {
+				a += "[[:space:]]+"
+			}
+			b := "[[:space:]]*" + regexp.QuoteMeta("&&") + "[[:space:]]*"
+			regex += "((" + a + ")|(" + b + "))"
+		case PartTypeSpaces:
+			regex += "[[:space:]]+"
+		case PartTypeSpacesOptional:
+			regex += "[[:space:]]*"
+		case PartTypeHexSpaces:
+			regex += "(" + regexp.QuoteMeta("%20") + ")+"
+		case PartTypeHexSpacesOptional:
+			regex += "(" + regexp.QuoteMeta("%20") + ")*"
+		case PartTypeComment:
+			regex += regexp.QuoteMeta("/*") + "[[:alnum:][:space:]]*" + regexp.QuoteMeta("*/")
+		case PartTypeObfuscated:
+			return "", ErrorNotSupported
+		case PartTypeObfuscatedWithComments:
+			return "", ErrorNotSupported
+		case PartTypeHex:
+			regex += "0x[[:xdigit:]]+"
+		case PartTypeNumberList:
+			regex += "([[:digit:]]" + regexp.QuoteMeta(",") + "[[:space:]]*)+"
+		case PartTypeScientificNumber:
+			regex += "[[:digit:]]+" + regexp.QuoteMeta(".") + "?[[:digit:]]*(e[+]?[[:digit:]]+)?"
+		case PartTypeSQL:
+			return "", ErrorNotSupported
+		}
+	}
+	return "^" + regex + "$", nil
 }
