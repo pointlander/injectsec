@@ -6,7 +6,9 @@ package main
 
 import (
 	"fmt"
+	"math/rand"
 	"regexp"
+	"strconv"
 	"strings"
 )
 
@@ -293,7 +295,7 @@ func (p *Parts) Regex() (string, error) {
 		case PartTypeNumberList:
 			regex += "([[:digit:]]*[[:space:]]*,[[:space:]]*)*[[:digit:]]+"
 		case PartTypeScientificNumber:
-			regex += "[[:digit:]]+" + regexp.QuoteMeta(".") + "?[[:digit:]]*(e[+]?[[:digit:]]+)?"
+			regex += "[+-]?[[:digit:]]+" + regexp.QuoteMeta(".") + "?[[:digit:]]*(e[+-]?[[:digit:]]+)?"
 		case PartTypeSQL:
 			regex += "select([[:space:]]+[\\p{L}\\p{N}_\\p{Cc}]+[[:space:]]*,)*([[:space:]]+[\\p{L}\\p{N}_\\p{Cc}]+)" +
 				"[[:space:]]+from([[:space:]]+[\\p{L}\\p{N}_\\p{Cc}]+[[:space:]]*,)*([[:space:]]+[\\p{L}\\p{N}_\\p{Cc}]+)" +
@@ -301,4 +303,223 @@ func (p *Parts) Regex() (string, error) {
 		}
 	}
 	return "^" + regex + "$", nil
+}
+
+// Sample samples from the parts
+func (p *Parts) Sample(rnd *rand.Rand) (string, error) {
+	last, sample, state := len(p.Parts)-1, "", make(map[int]string)
+	for i, part := range p.Parts {
+		switch part.PartType {
+		case PartTypeLiteral:
+			sample += part.Literal
+		case PartTypeNumber:
+			if value, ok := state[part.Variable]; ok {
+				sample += value
+				break
+			}
+			s := strconv.Itoa(rand.Intn(part.Max))
+			state[part.Variable] = s
+			sample += s
+		case PartTypeName:
+			if value, ok := state[part.Variable]; ok {
+				sample += value
+				break
+			}
+			s, count := "", rand.Intn(8)+1
+			for i := 0; i < count; i++ {
+				s += string(rune(int('a') + rnd.Intn(int('z'-'a'))))
+			}
+			state[part.Variable] = s
+			sample += s
+		case PartTypeOr:
+			if rnd.Intn(2) == 0 {
+				if i == 0 {
+					count := rnd.Intn(8)
+					for i := 0; i < count; i++ {
+						sample += " "
+					}
+				} else {
+					count := rnd.Intn(8) + 1
+					for i := 0; i < count; i++ {
+						sample += " "
+					}
+				}
+				sample += "or"
+				if i == last {
+					count := rnd.Intn(8)
+					for i := 0; i < count; i++ {
+						sample += " "
+					}
+				} else {
+					count := rnd.Intn(8) + 1
+					for i := 0; i < count; i++ {
+						sample += " "
+					}
+				}
+			} else {
+				count := rnd.Intn(8)
+				for i := 0; i < count; i++ {
+					sample += " "
+				}
+				sample += "||"
+				count = rnd.Intn(8)
+				for i := 0; i < count; i++ {
+					sample += " "
+				}
+			}
+		case PartTypeHexOr:
+			if rnd.Intn(2) == 0 {
+				if i == 0 {
+					count := rnd.Intn(8)
+					for i := 0; i < count; i++ {
+						sample += "%20"
+					}
+				} else {
+					count := rnd.Intn(8) + 1
+					for i := 0; i < count; i++ {
+						sample += "%20"
+					}
+				}
+				sample += "or"
+				if i == last {
+					count := rnd.Intn(8)
+					for i := 0; i < count; i++ {
+						sample += "%20"
+					}
+				} else {
+					count := rnd.Intn(8) + 1
+					for i := 0; i < count; i++ {
+						sample += "%20"
+					}
+				}
+			} else {
+				count := rnd.Intn(8)
+				for i := 0; i < count; i++ {
+					sample += "%20"
+				}
+				sample += "||"
+				count = rnd.Intn(8)
+				for i := 0; i < count; i++ {
+					sample += "%20"
+				}
+			}
+		case PartTypeAnd:
+			if rnd.Intn(2) == 0 {
+				if i == 0 {
+					count := rnd.Intn(8)
+					for i := 0; i < count; i++ {
+						sample += " "
+					}
+				} else {
+					count := rnd.Intn(8) + 1
+					for i := 0; i < count; i++ {
+						sample += " "
+					}
+				}
+				sample += "and"
+				if i == last {
+					count := rnd.Intn(8)
+					for i := 0; i < count; i++ {
+						sample += " "
+					}
+				} else {
+					count := rnd.Intn(8) + 1
+					for i := 0; i < count; i++ {
+						sample += " "
+					}
+				}
+			} else {
+				count := rnd.Intn(8)
+				for i := 0; i < count; i++ {
+					sample += " "
+				}
+				sample += "&&"
+				count = rnd.Intn(8)
+				for i := 0; i < count; i++ {
+					sample += " "
+				}
+			}
+		case PartTypeSpaces:
+			count := rnd.Intn(8) + 1
+			for i := 0; i < count; i++ {
+				sample += " "
+			}
+		case PartTypeSpacesOptional:
+			count := rnd.Intn(8)
+			for i := 0; i < count; i++ {
+				sample += " "
+			}
+		case PartTypeHexSpaces:
+			count := rnd.Intn(8) + 1
+			for i := 0; i < count; i++ {
+				sample += "%20"
+			}
+		case PartTypeHexSpacesOptional:
+			count := rnd.Intn(8)
+			for i := 0; i < count; i++ {
+				sample += "%20"
+			}
+		case PartTypeComment:
+			sample += "/*"
+			count := rand.Intn(8) + 1
+			for i := 0; i < count; i++ {
+				sample += string(rune(int('a') + rnd.Intn(int('z'-'a'))))
+			}
+			sample += "*/"
+		case PartTypeObfuscated:
+			s, err := part.Parts.Sample(rnd)
+			if err != nil {
+				return "", err
+			}
+			sample += "'"
+			for _, v := range s {
+				sample += string(v)
+				if rnd.Intn(3) == 0 {
+					sample += "'"
+					if rnd.Intn(2) == 0 {
+						sample += "+"
+					} else {
+						sample += "||"
+					}
+					sample += "'"
+				}
+			}
+			sample += "'"
+		case PartTypeObfuscatedWithComments:
+			s, err := part.Parts.Sample(rnd)
+			if err != nil {
+				return "", err
+			}
+			for _, v := range s {
+				sample += string(v)
+				if rnd.Intn(3) == 0 {
+					sample += "/**/"
+				}
+			}
+		case PartTypeHex:
+			sample += fmt.Sprintf("%#x", rnd.Intn(part.Max))
+		case PartTypeNumberList:
+			for i := 0; i < 7; i++ {
+				sample += strconv.Itoa(rand.Intn(part.Max))
+				sample += ","
+			}
+			sample += strconv.Itoa(rand.Intn(part.Max))
+		case PartTypeScientificNumber:
+			const factor = 1337 * 1337
+			sample += fmt.Sprintf("%E", rnd.Float64()*factor-factor/2)
+		case PartTypeSQL:
+			a, count := "", rand.Intn(8)+1
+			for i := 0; i < count; i++ {
+				a += string(rune(int('a') + rnd.Intn(int('z'-'a'))))
+			}
+			b, count := "", rand.Intn(8)+1
+			for i := 0; i < count; i++ {
+				b += string(rune(int('a') + rnd.Intn(int('z'-'a'))))
+			}
+			n := strconv.Itoa(rand.Intn(1337))
+
+			sample += "select " + a + " from " + b + " where " + n + "=" + n
+		}
+	}
+	return sample, nil
 }

@@ -3078,9 +3078,9 @@ func TrainingDataGenerator(rnd *rand.Rand) []Generator {
 				p := NewParts()
 				p.AddName(0)
 				p.AddOr()
-				p.AddNumber(0, 1337)
+				p.AddNumber(1, 1337)
 				p.AddLiteral("=")
-				p.AddNumber(0, 1337)
+				p.AddNumber(1, 1337)
 				p.AddSpaces()
 				p.AddLiteral("--")
 				return p
@@ -4876,9 +4876,9 @@ func TrainingDataGenerator(rnd *rand.Rand) []Generator {
 				p := NewParts()
 				p.AddName(0)
 				p.AddOr()
-				p.AddNumber(0, 1337)
+				p.AddNumber(1, 1337)
 				p.AddLiteral("=")
-				p.AddNumber(0, 1337)
+				p.AddNumber(1, 1337)
 				p.AddSpaces()
 				p.AddLiteral("--")
 				return p
