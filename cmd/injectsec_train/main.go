@@ -141,8 +141,10 @@ func generateTrainingData() (training, validation Examples) {
 		if generator.Skip == true {
 			continue
 		}
-		if !generator.Abstract {
+		if generator.Case == "" {
 			training = append(training, Example{[]byte(strings.ToLower(generator.Form)), true})
+		} else {
+			training = append(training, Example{[]byte(strings.ToLower(generator.Case)), true})
 		}
 	}
 
@@ -243,15 +245,16 @@ func main() {
 					if err != nil {
 						panic(err)
 					}
-					if !generator.Abstract {
-						form := strings.ToLower(generator.Form)
-						attempts++
-						if !regex.MatchString(form) {
-							nomatch++
-							fmt.Println(exp)
-							fmt.Println(form)
-							fmt.Println()
-						}
+					form := strings.ToLower(generator.Form)
+					if generator.Case != "" {
+						form = strings.ToLower(generator.Case)
+					}
+					attempts++
+					if !regex.MatchString(form) {
+						nomatch++
+						fmt.Println(exp)
+						fmt.Println(form)
+						fmt.Println()
 					}
 				}
 				count++

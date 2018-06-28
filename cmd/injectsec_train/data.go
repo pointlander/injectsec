@@ -12,11 +12,11 @@ import (
 
 // Generator generates training data
 type Generator struct {
-	Form     string
-	Skip     bool
-	Abstract bool
-	Make     func() (sample string)
-	Regex    func() *Parts
+	Form  string
+	Case  string
+	Skip  bool
+	Make  func() (sample string)
+	Regex func() *Parts
 }
 
 // TrainingDataGenerator returns a data generator
@@ -176,8 +176,8 @@ func TrainingDataGenerator(rnd *rand.Rand) []Generator {
 			},
 		},
 		{
-			Form:     "\";waitfor delay '0:0:__TIME__'--",
-			Abstract: true,
+			Form: "\";waitfor delay '0:0:__TIME__'--",
+			Case: "\";waitfor delay '0:0:24'--",
 			Make: func() (sample string) {
 				sample += "\";waitfor"
 				sample += sampleSpaces()
@@ -200,8 +200,8 @@ func TrainingDataGenerator(rnd *rand.Rand) []Generator {
 			},
 		},
 		{
-			Form:     "1) or pg_sleep(__TIME__)--",
-			Abstract: true,
+			Form: "1) or pg_sleep(__TIME__)--",
+			Case: "1) or pg_sleep(123)--",
 			Make: func() (sample string) {
 				sample += sampleNumber(1337)
 				sample += ")"
@@ -318,8 +318,8 @@ func TrainingDataGenerator(rnd *rand.Rand) []Generator {
 			},
 		},
 		{
-			Form:     "\" or sleep(__TIME__)#",
-			Abstract: true,
+			Form: "\" or sleep(__TIME__)#",
+			Case: "\" or sleep(123)#",
 			Make: func() (sample string) {
 				sample += "\""
 				sample += sampleSpaces()
@@ -341,8 +341,8 @@ func TrainingDataGenerator(rnd *rand.Rand) []Generator {
 			},
 		},
 		{
-			Form:     "pg_sleep(__TIME__)--",
-			Abstract: true,
+			Form: "pg_sleep(__TIME__)--",
+			Case: "pg_sleep(123)--",
 			Make: func() (sample string) {
 				sample += "pg_sleep("
 				sample += sampleNumber(1337)
@@ -361,8 +361,8 @@ func TrainingDataGenerator(rnd *rand.Rand) []Generator {
 			Form: "*(|(objectclass=*))",
 		},
 		{
-			Form:     "declare @q nvarchar (200) 0x730065006c00650063 ...",
-			Abstract: true,
+			Form: "declare @q nvarchar (200) 0x730065006c00650063 ...",
+			Case: "declare @q nvarchar (200) 0x730065006c00650063",
 			Make: func() (sample string) {
 				sample += "declare"
 				sample += sampleSpaces()
@@ -437,8 +437,8 @@ func TrainingDataGenerator(rnd *rand.Rand) []Generator {
 			},
 		},
 		{
-			Form:     "1) or sleep(__TIME__)#",
-			Abstract: true,
+			Form: "1) or sleep(__TIME__)#",
+			Case: "1) or sleep(567)#",
 			Make: func() (sample string) {
 				sample += sampleNumber(1337)
 				sample += ")"
@@ -835,8 +835,8 @@ func TrainingDataGenerator(rnd *rand.Rand) []Generator {
 			},
 		},
 		{
-			Form:     ") or sleep(__TIME__)='",
-			Abstract: true,
+			Form: ") or sleep(__TIME__)='",
+			Case: ") or sleep(123)='",
 			Make: func() (sample string) {
 				sample += ")"
 				sample += sampleSpaces()
@@ -1082,8 +1082,8 @@ func TrainingDataGenerator(rnd *rand.Rand) []Generator {
 			},
 		},
 		{
-			Form:     "));waitfor delay '0:0:__TIME__'--",
-			Abstract: true,
+			Form: "));waitfor delay '0:0:__TIME__'--",
+			Case: "));waitfor delay '0:0:42'--",
 			Make: func() (sample string) {
 				sample += "));waitfor"
 				sample += sampleSpaces()
@@ -1144,8 +1144,8 @@ func TrainingDataGenerator(rnd *rand.Rand) []Generator {
 			},
 		},
 		{
-			Form:     "1;(load_file(char(47,101,116,99,47,112,97,115, ...",
-			Abstract: true,
+			Form: "1;(load_file(char(47,101,116,99,47,112,97,115, ...",
+			Case: "1;(load_file(char(47,101,116,99,47,112,97,115)))",
 			Make: func() (sample string) {
 				sample += sampleNumber(256)
 				sample += ";(load_file(char("
@@ -1187,8 +1187,8 @@ func TrainingDataGenerator(rnd *rand.Rand) []Generator {
 			},
 		},
 		{
-			Form:     "1 or sleep(__TIME__)#",
-			Abstract: true,
+			Form: "1 or sleep(__TIME__)#",
+			Case: "1 or sleep(123)#",
 			Make: func() (sample string) {
 				sample += sampleNumber(1337)
 				sample += sampleSpaces()
@@ -1204,9 +1204,9 @@ func TrainingDataGenerator(rnd *rand.Rand) []Generator {
 				p.AddNumber(0, 1337)
 				p.AddOr()
 				p.AddLiteral("sleep(")
-				p.AddSpaces()
+				p.AddSpacesOptional()
 				p.AddNumber(1, 1337)
-				p.AddSpaces()
+				p.AddSpacesOptional()
 				p.AddLiteral(")#")
 				return p
 			},
@@ -1367,8 +1367,8 @@ func TrainingDataGenerator(rnd *rand.Rand) []Generator {
 			},
 		},
 		{
-			Form:     "declare @s varchar (200) select @s = 0x73656c6 ...",
-			Abstract: true,
+			Form: "declare @s varchar (200) select @s = 0x73656c6 ...",
+			Case: "declare @s varchar (200) select @s = 0x73656c6",
 			Make: func() (sample string) {
 				sample += "declare"
 				sample += sampleSpaces()
@@ -1488,8 +1488,8 @@ func TrainingDataGenerator(rnd *rand.Rand) []Generator {
 			},
 		},
 		{
-			Form:     "\" or pg_sleep(__TIME__)--",
-			Abstract: true,
+			Form: "\" or pg_sleep(__TIME__)--",
+			Case: "\" or pg_sleep(123)--",
 			Make: func() (sample string) {
 				sample += "\""
 				sample += sampleSpaces()
@@ -1505,7 +1505,9 @@ func TrainingDataGenerator(rnd *rand.Rand) []Generator {
 				p.AddLiteral("\"")
 				p.AddOr()
 				p.AddLiteral("pg_sleep(")
+				p.AddSpacesOptional()
 				p.AddNumber(0, 1337)
+				p.AddSpacesOptional()
 				p.AddLiteral(")--")
 				return p
 			},
@@ -1679,8 +1681,8 @@ func TrainingDataGenerator(rnd *rand.Rand) []Generator {
 			},
 		},
 		{
-			Form:     "declare @s varchar(200) select @s = 0x77616974 ...",
-			Abstract: true,
+			Form: "declare @s varchar(200) select @s = 0x77616974 ...",
+			Case: "declare @s varchar(200) select @s = 0x77616974",
 			Make: func() (sample string) {
 				sample += "declare"
 				sample += sampleSpaces()
@@ -1741,8 +1743,8 @@ func TrainingDataGenerator(rnd *rand.Rand) []Generator {
 			},
 		},
 		{
-			Form:     "sqlvuln",
-			Abstract: true,
+			Form: "sqlvuln",
+			Case: "select a from b where 1=1",
 			Make: func() (sample string) {
 				sample += sampleSpaces()
 				sample += "sqlvuln"
@@ -1758,8 +1760,8 @@ func TrainingDataGenerator(rnd *rand.Rand) []Generator {
 			},
 		},
 		{
-			Form:     "\"));waitfor delay '0:0:__TIME__'--",
-			Abstract: true,
+			Form: "\"));waitfor delay '0:0:__TIME__'--",
+			Case: "\"));waitfor delay '0:0:23'--",
 			Make: func() (sample string) {
 				sample += "\"));waitfor"
 				sample += sampleSpaces()
@@ -1976,8 +1978,8 @@ func TrainingDataGenerator(rnd *rand.Rand) []Generator {
 			},
 		},
 		{
-			Form:     "(sqlvuln)",
-			Abstract: true,
+			Form: "(sqlvuln)",
+			Case: "(select a from b where 1=1)",
 			Make: func() (sample string) {
 				sample += sampleSpaces()
 				sample += "(sqlvuln)"
@@ -2049,8 +2051,8 @@ func TrainingDataGenerator(rnd *rand.Rand) []Generator {
 			},
 		},
 		{
-			Form:     " and 1=( if((load_file(char(110,46,101,120,11 ...",
-			Abstract: true,
+			Form: " and 1=( if((load_file(char(110,46,101,120,11 ...",
+			Case: " and 1=( if((load_file(char(110,46,101,120,11)))))",
 			Make: func() (sample string) {
 				sample += sampleSpaces()
 				sample += sampleAnd()
@@ -2080,8 +2082,8 @@ func TrainingDataGenerator(rnd *rand.Rand) []Generator {
 			},
 		},
 		{
-			Form:     "0x770061006900740066006F0072002000640065006C00 ...",
-			Abstract: true,
+			Form: "0x770061006900740066006F0072002000640065006C00 ...",
+			Case: "0x770061006900740066006F0072002000640065006C00",
 			Make: func() (sample string) {
 				sample += sampleHex(1337 * 1337)
 				return
@@ -2129,8 +2131,8 @@ func TrainingDataGenerator(rnd *rand.Rand) []Generator {
 			},
 		},
 		{
-			Form:     "1)) or pg_sleep(__TIME__)--",
-			Abstract: true,
+			Form: "1)) or pg_sleep(__TIME__)--",
+			Case: "1)) or pg_sleep(123)--",
 			Make: func() (sample string) {
 				sample += sampleNumber(1337)
 				sample += "))"
@@ -2233,8 +2235,8 @@ func TrainingDataGenerator(rnd *rand.Rand) []Generator {
 			},
 		},
 		{
-			Form:     "(sqlattempt2)",
-			Abstract: true,
+			Form: "(sqlattempt2)",
+			Case: "(select a from b where 1=1)",
 			Regex: func() *Parts {
 				p := NewParts()
 				p.AddSpacesOptional()
@@ -2262,8 +2264,8 @@ func TrainingDataGenerator(rnd *rand.Rand) []Generator {
 			},
 		},
 		{
-			Form:     "t'exec master..xp_cmdshell 'nslookup www.googl ...",
-			Abstract: true,
+			Form: "t'exec master..xp_cmdshell 'nslookup www.googl ...",
+			Case: "t'exec master..xp_cmdshell 'nslookup www.google.com",
 			Make: func() (sample string) {
 				sample += sampleName()
 				sample += "'exec"
@@ -2277,7 +2279,6 @@ func TrainingDataGenerator(rnd *rand.Rand) []Generator {
 				sample += sampleName()
 				sample += "."
 				sample += sampleName()
-				sample += "'"
 				return
 			},
 			Regex: func() *Parts {
@@ -2294,7 +2295,6 @@ func TrainingDataGenerator(rnd *rand.Rand) []Generator {
 				p.AddName(2)
 				p.AddLiteral(".")
 				p.AddName(3)
-				p.AddLiteral("'")
 				return p
 			},
 		},
@@ -2370,8 +2370,8 @@ func TrainingDataGenerator(rnd *rand.Rand) []Generator {
 			},
 		},
 		{
-			Form:     " or pg_sleep(__TIME__)--",
-			Abstract: true,
+			Form: " or pg_sleep(__TIME__)--",
+			Case: " or pg_sleep(123)--",
 			Make: func() (sample string) {
 				sample += sampleSpaces()
 				sample += sampleOr()
@@ -2422,8 +2422,8 @@ func TrainingDataGenerator(rnd *rand.Rand) []Generator {
 			},
 		},
 		{
-			Form:     "\") or sleep(__TIME__)=\"",
-			Abstract: true,
+			Form: "\") or sleep(__TIME__)=\"",
+			Case: "\") or sleep(857)=\"",
 			Make: func() (sample string) {
 				sample += "\")"
 				sample += sampleSpaces()
@@ -2480,8 +2480,8 @@ func TrainingDataGenerator(rnd *rand.Rand) []Generator {
 			},
 		},
 		{
-			Form:     "; begin declare @var varchar(8000) set @var=' ...",
-			Abstract: true,
+			Form: "; begin declare @var varchar(8000) set @var=' ...",
+			Case: "; begin declare @var varchar(8000) set @var='abc'",
 			Make: func() (sample string) {
 				sample += ";"
 				sample += sampleSpaces()
@@ -2561,8 +2561,8 @@ func TrainingDataGenerator(rnd *rand.Rand) []Generator {
 			},
 		},
 		{
-			Form:     "0x77616974666F722064656C61792027303A303A313027 ...",
-			Abstract: true,
+			Form: "0x77616974666F722064656C61792027303A303A313027 ...",
+			Case: "0x77616974666F722064656C61792027303A303A313027",
 			Make: func() (sample string) {
 				sample += sampleHex(1337 * 1337)
 				return
@@ -2594,8 +2594,8 @@ func TrainingDataGenerator(rnd *rand.Rand) []Generator {
 			},
 		},
 		{
-			Form:     ") or pg_sleep(__TIME__)--",
-			Abstract: true,
+			Form: ") or pg_sleep(__TIME__)--",
+			Case: ") or pg_sleep(123)--",
 			Make: func() (sample string) {
 				sample += ")"
 				sample += sampleSpaces()
@@ -2635,8 +2635,8 @@ func TrainingDataGenerator(rnd *rand.Rand) []Generator {
 			},
 		},
 		{
-			Form:     " or sleep(__TIME__)#",
-			Abstract: true,
+			Form: " or sleep(__TIME__)#",
+			Case: " or sleep(123)#",
 			Make: func() (sample string) {
 				sample += sampleSpaces()
 				sample += sampleOr()
@@ -2881,8 +2881,8 @@ func TrainingDataGenerator(rnd *rand.Rand) []Generator {
 			},
 		},
 		{
-			Form:     " or sleep(__TIME__)='",
-			Abstract: true,
+			Form: " or sleep(__TIME__)='",
+			Case: " or sleep(123)='",
 			Make: func() (sample string) {
 				sample += sampleSpaces()
 				sample += sampleOr()
@@ -3010,8 +3010,8 @@ func TrainingDataGenerator(rnd *rand.Rand) []Generator {
 			},
 		},
 		{
-			Form:     "declare @s varchar (8000) select @s = 0x73656c ...",
-			Abstract: true,
+			Form: "declare @s varchar (8000) select @s = 0x73656c ...",
+			Case: "declare @s varchar (8000) select @s = 0x73656c",
 			Make: func() (sample string) {
 				sample += "declare"
 				sample += sampleSpaces()
@@ -3210,8 +3210,8 @@ func TrainingDataGenerator(rnd *rand.Rand) []Generator {
 			},
 		},
 		{
-			Form:     ";waitfor delay '0:0:__TIME__'--",
-			Abstract: true,
+			Form: ";waitfor delay '0:0:__TIME__'--",
+			Case: ";waitfor delay '0:0:123'--",
 			Make: func() (sample string) {
 				sample += ";waitfor"
 				sample += sampleSpaces()
@@ -3383,8 +3383,8 @@ func TrainingDataGenerator(rnd *rand.Rand) []Generator {
 			},
 		},
 		{
-			Form:     "\");waitfor delay '0:0:__TIME__'--",
-			Abstract: true,
+			Form: "\");waitfor delay '0:0:__TIME__'--",
+			Case: "\");waitfor delay '0:0:42'--",
 			Make: func() (sample string) {
 				sample += "\");waitfor"
 				sample += sampleSpaces()
@@ -3566,8 +3566,8 @@ func TrainingDataGenerator(rnd *rand.Rand) []Generator {
 			},
 		},
 		{
-			Form:     "\")) or sleep(__TIME__)=\"",
-			Abstract: true,
+			Form: "\")) or sleep(__TIME__)=\"",
+			Case: "\")) or sleep(123)=\"",
 			Make: func() (sample string) {
 				sample += "\"))"
 				sample += sampleSpaces()
@@ -3591,8 +3591,8 @@ func TrainingDataGenerator(rnd *rand.Rand) []Generator {
 			},
 		},
 		{
-			Form:     "0x730065006c0065006300740020004000400076006500 ...",
-			Abstract: true,
+			Form: "0x730065006c0065006300740020004000400076006500 ...",
+			Case: "0x730065006c0065006300740020004000400076006500",
 			Make: func() (sample string) {
 				sample += sampleSpaces()
 				sample += sampleHex(1337 * 1337)
@@ -3637,8 +3637,8 @@ func TrainingDataGenerator(rnd *rand.Rand) []Generator {
 			},
 		},
 		{
-			Form:     "\") or pg_sleep(__TIME__)--",
-			Abstract: true,
+			Form: "\") or pg_sleep(__TIME__)--",
+			Case: "\") or pg_sleep(123)--",
 			Make: func() (sample string) {
 				sample += "\")"
 				sample += sampleSpaces()
@@ -3800,8 +3800,8 @@ func TrainingDataGenerator(rnd *rand.Rand) []Generator {
 			},
 		},
 		{
-			Form:     "1 or pg_sleep(__TIME__)--",
-			Abstract: true,
+			Form: "1 or pg_sleep(__TIME__)--",
+			Case: "1 or pg_sleep(123)--",
 			Make: func() (sample string) {
 				sample += sampleNumber(1337)
 				sample += sampleSpaces()
@@ -3936,8 +3936,8 @@ func TrainingDataGenerator(rnd *rand.Rand) []Generator {
 			},
 		},
 		{
-			Form:     ")) or pg_sleep(__TIME__)--",
-			Abstract: true,
+			Form: ")) or pg_sleep(__TIME__)--",
+			Case: ")) or pg_sleep(343)--",
 			Make: func() (sample string) {
 				sample += "))"
 				sample += sampleSpaces()
@@ -4057,8 +4057,8 @@ func TrainingDataGenerator(rnd *rand.Rand) []Generator {
 			},
 		},
 		{
-			Form:     "declare @q nvarchar (200) select @q = 0x770061 ...",
-			Abstract: true,
+			Form: "declare @q nvarchar (200) select @q = 0x770061 ...",
+			Case: "declare @q nvarchar (200) select @q = 0x770061",
 			Make: func() (sample string) {
 				sample += "declare"
 				sample += sampleSpaces()
@@ -4347,8 +4347,8 @@ func TrainingDataGenerator(rnd *rand.Rand) []Generator {
 			},
 		},
 		{
-			Form:     "1)) or sleep(__TIME__)#",
-			Abstract: true,
+			Form: "1)) or sleep(__TIME__)#",
+			Case: "1)) or sleep(123)#",
 			Make: func() (sample string) {
 				sample += sampleNumber(1337)
 				sample += "))"
@@ -4398,8 +4398,8 @@ func TrainingDataGenerator(rnd *rand.Rand) []Generator {
 			},
 		},
 		{
-			Form:     " select name from syscolumns where id = (sele ...",
-			Abstract: true,
+			Form: " select name from syscolumns where id = (sele ...",
+			Case: " select name from syscolumns where id = (select 3)",
 			Make: func() (sample string) {
 				sample += sampleSpaces()
 				sample += "select"
@@ -4516,8 +4516,8 @@ func TrainingDataGenerator(rnd *rand.Rand) []Generator {
 			},
 		},
 		{
-			Form:     ");waitfor delay '0:0:__TIME__'--",
-			Abstract: true,
+			Form: ");waitfor delay '0:0:__TIME__'--",
+			Case: ");waitfor delay '0:0:123'--",
 			Make: func() (sample string) {
 				sample += ");waitfor"
 				sample += sampleSpaces()
@@ -4612,8 +4612,8 @@ func TrainingDataGenerator(rnd *rand.Rand) []Generator {
 			},
 		},
 		{
-			Form:     "+sqlvuln",
-			Abstract: true,
+			Form: "+sqlvuln",
+			Case: "+select a from b where 1=1",
 			Make: func() (sample string) {
 				sample += "+"
 				sample += sampleName()
@@ -4652,8 +4652,8 @@ func TrainingDataGenerator(rnd *rand.Rand) []Generator {
 			},
 		},
 		{
-			Form:     ")) or sleep(__TIME__)='",
-			Abstract: true,
+			Form: ")) or sleep(__TIME__)='",
+			Case: ")) or sleep(123)='",
 			Make: func() (sample string) {
 				sample += "))"
 				sample += sampleSpaces()
@@ -4735,8 +4735,8 @@ func TrainingDataGenerator(rnd *rand.Rand) []Generator {
 			},
 		},
 		{
-			Form:     "sqlvuln;",
-			Abstract: true,
+			Form: "sqlvuln;",
+			Case: "select a from b where 1=1;",
 			Make: func() (sample string) {
 				sample += sampleName()
 				sample += ";"
@@ -4750,8 +4750,8 @@ func TrainingDataGenerator(rnd *rand.Rand) []Generator {
 			},
 		},
 		{
-			Form:     " union select * from users where login = char ...",
-			Abstract: true,
+			Form: " union select * from users where login = char ...",
+			Case: " union select * from users where login = char 1, 2, 3",
 			Make: func() (sample string) {
 				sample += sampleSpaces()
 				sample += "union"
@@ -5012,8 +5012,8 @@ func TrainingDataGenerator(rnd *rand.Rand) []Generator {
 			},
 		},
 		{
-			Form:     "\")) or pg_sleep(__TIME__)--",
-			Abstract: true,
+			Form: "\")) or pg_sleep(__TIME__)--",
+			Case: "\")) or pg_sleep(123)--",
 			Make: func() (sample string) {
 				sample += "\"))"
 				sample += sampleSpaces()
@@ -6188,8 +6188,8 @@ func TrainingDataGenerator(rnd *rand.Rand) []Generator {
 			},
 		},
 		{
-			Form:     "'sqlattempt1",
-			Abstract: true,
+			Form: "'sqlattempt1",
+			Case: "'select a from b where 1=1",
 			Make: func() (sample string) {
 				sample += "'"
 				sample += sampleName()

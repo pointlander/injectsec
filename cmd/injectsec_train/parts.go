@@ -285,17 +285,19 @@ func (p *Parts) Regex() (string, error) {
 		case PartTypeComment:
 			regex += regexp.QuoteMeta("/*") + "[[:alnum:][:space:]]*" + regexp.QuoteMeta("*/")
 		case PartTypeObfuscated:
-			return "", ErrorNotSupported
+			regex += "'[\\p{L}\\p{N}_\\p{Cc}[:space:]]*'([[:space:]]*([|]{2}|[+])[[:space:]]*'[\\p{L}\\p{N}_\\p{Cc}[:space:]]*')*"
 		case PartTypeObfuscatedWithComments:
-			return "", ErrorNotSupported
+			regex += "([\\p{L}\\p{N}_\\p{Cc}[:space:]]+|(/[*][\\p{L}\\p{N}_\\p{Cc}[:space:]]*[*]/))+"
 		case PartTypeHex:
 			regex += "0x[[:xdigit:]]+"
 		case PartTypeNumberList:
-			regex += "([[:digit:]]" + regexp.QuoteMeta(",") + "[[:space:]]*)+"
+			regex += "([[:digit:]]*[[:space:]]*,[[:space:]]*)*[[:digit:]]+"
 		case PartTypeScientificNumber:
 			regex += "[[:digit:]]+" + regexp.QuoteMeta(".") + "?[[:digit:]]*(e[+]?[[:digit:]]+)?"
 		case PartTypeSQL:
-			return "", ErrorNotSupported
+			regex += "select([[:space:]]+[\\p{L}\\p{N}_\\p{Cc}]+[[:space:]]*,)*([[:space:]]+[\\p{L}\\p{N}_\\p{Cc}]+)" +
+				"[[:space:]]+from([[:space:]]+[\\p{L}\\p{N}_\\p{Cc}]+[[:space:]]*,)*([[:space:]]+[\\p{L}\\p{N}_\\p{Cc}]+)" +
+				"[[:space:]]+where[[:space:]]+[\\p{L}\\p{N}_\\p{Cc}]+[[:space:]]*[=><][[:space:]]*[\\p{L}\\p{N}_\\p{Cc}]+"
 		}
 	}
 	return "^" + regex + "$", nil
