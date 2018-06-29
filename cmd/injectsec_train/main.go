@@ -52,7 +52,8 @@ func generateTrainingData() (training, validation Examples) {
 			continue
 		}
 		if generator.Regex != nil {
-			parts := generator.Regex()
+			parts := NewParts()
+			generator.Regex(parts)
 			for i := 0; i < 128; i++ {
 				line, err := parts.Sample(rnd)
 				if err != nil {
@@ -229,7 +230,8 @@ func main() {
 		for _, generator := range generators {
 			fmt.Println(generator.Form)
 			if generator.Regex != nil {
-				parts := generator.Regex()
+				parts := NewParts()
+				generator.Regex(parts)
 				for i := 0; i < 10; i++ {
 					fmt.Println(parts.Sample(rnd))
 				}
@@ -243,7 +245,8 @@ func main() {
 		generators, count, attempts, nomatch := TrainingDataGenerator(rnd), 0, 0, 0
 		for _, generator := range generators {
 			if generator.Regex != nil {
-				parts := generator.Regex()
+				parts := NewParts()
+				generator.Regex(parts)
 				exp, err := parts.Regex()
 				if err == nil {
 					regex, err := regexp.Compile(exp)

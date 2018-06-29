@@ -12,7 +12,8 @@ func TestRegex(t *testing.T) {
 	generators := TrainingDataGenerator(rnd)
 	for _, generator := range generators {
 		if generator.Regex != nil {
-			parts := generator.Regex()
+			parts := NewParts()
+			generator.Regex(parts)
 			exp, err := parts.Regex()
 			if err != nil {
 				t.Fatal(err)
@@ -37,7 +38,8 @@ func TestSample(t *testing.T) {
 	generators := TrainingDataGenerator(rnd)
 	for _, generator := range generators {
 		if generator.Regex != nil {
-			parts := generator.Regex()
+			parts := NewParts()
+			generator.Regex(parts)
 			exp, err := parts.Regex()
 			if err != nil {
 				t.Fatal(err)
