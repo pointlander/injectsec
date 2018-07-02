@@ -11,9 +11,11 @@ import (
 	"fmt"
 	"math/rand"
 	"os"
+	"regexp"
 	"sort"
 	"strings"
 
+	dat "github.com/pointlander/injectsec/data"
 	"github.com/pointlander/injectsec/gru"
 )
 
@@ -45,14 +47,19 @@ func (e Examples) Permute() {
 }
 
 func generateTrainingData() (training, validation Examples) {
-	generators := TrainingDataGenerator(rnd)
+	generators := dat.TrainingDataGenerator(rnd)
 	for _, generator := range generators {
-		if generator.Skip == true {
+		if generator.SkipTrain == true {
 			continue
 		}
-		if generator.Make != nil {
+		if generator.Regex != nil {
+			parts := dat.NewParts()
+			generator.Regex(parts)
 			for i := 0; i < 128; i++ {
-				line := generator.Make()
+				line, err := parts.Sample(rnd)
+				if err != nil {
+					panic(err)
+				}
 				training = append(training, Example{[]byte(strings.ToLower(line)), true})
 			}
 		}
@@ -137,11 +144,13 @@ func generateTrainingData() (training, validation Examples) {
 	training = training[2000:]
 
 	for _, generator := range generators {
-		if generator.Skip == true {
+		if generator.SkipTrain == true {
 			continue
 		}
-		if !generator.Abstract {
+		if generator.Case == "" {
 			training = append(training, Example{[]byte(strings.ToLower(generator.Form)), true})
+		} else {
+			training = append(training, Example{[]byte(strings.ToLower(generator.Case)), true})
 		}
 	}
 
@@ -198,6 +207,7 @@ var (
 	help   = flag.Bool("help", false, "print help")
 	chunks = flag.Bool("chunks", false, "generate chunks")
 	print  = flag.Bool("print", false, "print training data")
+	parts  = flag.Bool("parts", false, "test parts")
 	data   = flag.String("data", "", "use data for training")
 	epochs = flag.Int("epochs", 1, "the number of epochs for training")
 )
@@ -217,16 +227,49 @@ func main() {
 	}
 
 	if *print {
-		generators := TrainingDataGenerator(rnd)
+		generators := dat.TrainingDataGenerator(rnd)
 		for _, generator := range generators {
 			fmt.Println(generator.Form)
-			if generator.Make != nil {
+			if generator.Regex != nil {
+				parts := dat.NewParts()
+				generator.Regex(parts)
 				for i := 0; i < 10; i++ {
-					fmt.Println(generator.Make())
+					fmt.Println(parts.Sample(rnd))
 				}
 			}
 			fmt.Println()
 		}
+		return
+	}
+
+	if *parts {
+		generators, count, attempts, nomatch := dat.TrainingDataGenerator(rnd), 0, 0, 0
+		for _, generator := range generators {
+			if generator.Regex != nil {
+				parts := dat.NewParts()
+				generator.Regex(parts)
+				exp, err := parts.Regex()
+				if err == nil {
+					regex, err := regexp.Compile(exp)
+					if err != nil {
+						panic(err)
+					}
+					form := strings.ToLower(generator.Form)
+					if generator.Case != "" {
+						form = strings.ToLower(generator.Case)
+					}
+					attempts++
+					if !regex.MatchString(form) {
+						nomatch++
+						fmt.Println(exp)
+						fmt.Println(form)
+						fmt.Println()
+					}
+				}
+				count++
+			}
+		}
+		fmt.Println(count, attempts, nomatch)
 		return
 	}
 

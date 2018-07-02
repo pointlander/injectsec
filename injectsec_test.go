@@ -12,20 +12,31 @@ func TestDetector(t *testing.T) {
 		t.Fatal(err)
 	}
 	detector := maker.Make()
-	detector.SkipRegex = true
 
 	attacks := []string{
 		"test or 1337=1337 --\"",
 		" or 1=1 ",
 		"/**/or/**/1337=1337",
 	}
+
+	detector.SkipRegex = true
 	for _, s := range attacks {
 		probability, err := detector.Detect(s)
 		if err != nil {
 			t.Fatal(err)
 		}
 		if probability < 50 {
-			t.Fatal("should be a sql injection attack")
+			t.Fatal("should be a sql injection attack", s)
+		}
+	}
+	detector.SkipRegex = false
+	for _, s := range attacks {
+		probability, err := detector.Detect(s)
+		if err != nil {
+			t.Fatal(err)
+		}
+		if probability < 50 {
+			t.Fatal("should be a sql injection attack", s)
 		}
 	}
 
@@ -39,13 +50,25 @@ func TestDetector(t *testing.T) {
 		"cat1or",
 		"cat1orcat1",
 	}
+
+	detector.SkipRegex = true
 	for _, s := range notAttacks {
 		probability, err := detector.Detect(s)
 		if err != nil {
 			t.Fatal(err)
 		}
 		if probability > 50 {
-			t.Fatal("should not be a sql injection attack")
+			t.Fatal("should not be a sql injection attack", s)
+		}
+	}
+	detector.SkipRegex = false
+	for _, s := range notAttacks {
+		probability, err := detector.Detect(s)
+		if err != nil {
+			t.Fatal(err)
+		}
+		if probability > 50 {
+			t.Fatal("should not be a sql injection attack", s)
 		}
 	}
 }
