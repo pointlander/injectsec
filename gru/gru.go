@@ -6,7 +6,6 @@ import (
 	"regexp"
 	"sort"
 	"strings"
-	"unicode"
 
 	"github.com/pointlander/injectsec/data"
 	G "gorgonia.org/gorgonia"
@@ -83,7 +82,7 @@ func init() {
 	})
 }
 
-var filter *regexp.Regexp
+var filter, notFilter *regexp.Regexp
 
 func init() {
 	rnd := rand.New(rand.NewSource(1))
@@ -104,6 +103,7 @@ func init() {
 		}
 	}
 	filter = regexp.MustCompile("^(" + expression + ")$")
+	notFilter = regexp.MustCompile("^(([\\p{L}]+)|([\\p{N}]+))$")
 }
 
 // GRU is a GRU based anomaly detection engine
@@ -244,26 +244,12 @@ func (d *DetectorMaker) Make() *Detector {
 
 // Detect returns true if the input is a SQL injection attack
 func (d *Detector) Detect(a string) (float32, error) {
-	if !d.SkipRegex {
-		isNumber := true
-		for _, v := range a {
-			if !unicode.IsDigit(v) {
-				isNumber = false
-				break
-			}
-		}
-		if isNumber {
-			return 0, nil
-		}
+	if a == "" {
+		return 0, nil
+	}
 
-		isWord := true
-		for _, v := range a {
-			if !unicode.IsLetter(v) {
-				isWord = false
-				break
-			}
-		}
-		if isWord {
+	if !d.SkipRegex {
+		if notFilter.MatchString(a) {
 			return 0, nil
 		}
 
