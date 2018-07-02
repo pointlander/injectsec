@@ -12,7 +12,7 @@ import (
 type Generator struct {
 	Form      string
 	Case      string
-	Skip      bool
+	SkipTrain bool
 	SkipMatch bool
 	Regex     func(p *Parts)
 }
@@ -417,8 +417,8 @@ func TrainingDataGenerator(rnd *rand.Rand) []Generator {
 			},
 		},
 		{
-			Form: "0",
-			Skip: true,
+			Form:      "0",
+			SkipTrain: true,
 			Regex: func(p *Parts) {
 				p.AddNumber(0, 1337)
 			},

@@ -49,7 +49,7 @@ func (e Examples) Permute() {
 func generateTrainingData() (training, validation Examples) {
 	generators := dat.TrainingDataGenerator(rnd)
 	for _, generator := range generators {
-		if generator.Skip == true {
+		if generator.SkipTrain == true {
 			continue
 		}
 		if generator.Regex != nil {
@@ -144,7 +144,7 @@ func generateTrainingData() (training, validation Examples) {
 	training = training[2000:]
 
 	for _, generator := range generators {
-		if generator.Skip == true {
+		if generator.SkipTrain == true {
 			continue
 		}
 		if generator.Case == "" {
