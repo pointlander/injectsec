@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
-package main
+package data
 
 import (
 	"math/rand"
@@ -10,10 +10,11 @@ import (
 
 // Generator generates training data
 type Generator struct {
-	Form  string
-	Case  string
-	Skip  bool
-	Regex func(p *Parts)
+	Form      string
+	Case      string
+	Skip      bool
+	SkipMatch bool
+	Regex     func(p *Parts)
 }
 
 // TrainingDataGenerator returns a data generator
@@ -1822,7 +1823,8 @@ func TrainingDataGenerator(rnd *rand.Rand) []Generator {
 			},
 		},
 		{
-			Form: "uni/**/on sel/**/ect",
+			Form:      "uni/**/on sel/**/ect",
+			SkipMatch: true,
 			Regex: func(p *Parts) {
 				p.AddParts(PartTypeObfuscatedWithComments, func(p *Parts) {
 					p.AddLiteral("union")

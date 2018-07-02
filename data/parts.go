@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
-package main
+package data
 
 import (
 	"fmt"
@@ -219,8 +219,8 @@ func (p *Parts) AddSQL() {
 	p.AddType(PartTypeSQL)
 }
 
-// Regex generates a regex from the parts
-func (p *Parts) Regex() (string, error) {
+// RegexFragment is part of a regex
+func (p *Parts) RegexFragment() (string, error) {
 	last, regex := len(p.Parts)-1, ""
 	for i, part := range p.Parts {
 		switch part.PartType {
@@ -301,6 +301,15 @@ func (p *Parts) Regex() (string, error) {
 				"[[:space:]]+from([[:space:]]+[\\p{L}\\p{N}_\\p{Cc}]+[[:space:]]*,)*([[:space:]]+[\\p{L}\\p{N}_\\p{Cc}]+)" +
 				"[[:space:]]+where[[:space:]]+[\\p{L}\\p{N}_\\p{Cc}]+[[:space:]]*[=><][[:space:]]*[\\p{L}\\p{N}_\\p{Cc}]+"
 		}
+	}
+	return regex, nil
+}
+
+// Regex generates a regex from the parts
+func (p *Parts) Regex() (string, error) {
+	regex, err := p.RegexFragment()
+	if err != nil {
+		return "", err
 	}
 	return "^" + regex + "$", nil
 }

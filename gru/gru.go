@@ -3,10 +3,12 @@ package gru
 import (
 	"fmt"
 	"math/rand"
+	"regexp"
 	"sort"
 	"strings"
 	"unicode"
 
+	"github.com/pointlander/injectsec/data"
 	G "gorgonia.org/gorgonia"
 )
 
@@ -79,6 +81,29 @@ func init() {
 		}
 		return false
 	})
+}
+
+var filter *regexp.Regexp
+
+func init() {
+	rnd := rand.New(rand.NewSource(1))
+	generators, expression, sep := data.TrainingDataGenerator(rnd), "", "("
+	for _, generator := range generators {
+		if generator.SkipMatch {
+			continue
+		}
+		if generator.Regex != nil {
+			parts := data.NewParts()
+			generator.Regex(parts)
+			exp, err := parts.RegexFragment()
+			if err != nil {
+				panic(err)
+			}
+			expression += sep + exp + ")"
+			sep = "|("
+		}
+	}
+	filter = regexp.MustCompile("^(" + expression + ")$")
 }
 
 // GRU is a GRU based anomaly detection engine
@@ -240,6 +265,10 @@ func (d *Detector) Detect(a string) (float32, error) {
 		}
 		if isWord {
 			return 0, nil
+		}
+
+		if filter.MatchString(a) {
+			return 100.0, nil
 		}
 	}
 

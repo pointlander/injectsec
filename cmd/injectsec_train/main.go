@@ -15,6 +15,7 @@ import (
 	"sort"
 	"strings"
 
+	dat "github.com/pointlander/injectsec/data"
 	"github.com/pointlander/injectsec/gru"
 )
 
@@ -46,13 +47,13 @@ func (e Examples) Permute() {
 }
 
 func generateTrainingData() (training, validation Examples) {
-	generators := TrainingDataGenerator(rnd)
+	generators := dat.TrainingDataGenerator(rnd)
 	for _, generator := range generators {
 		if generator.Skip == true {
 			continue
 		}
 		if generator.Regex != nil {
-			parts := NewParts()
+			parts := dat.NewParts()
 			generator.Regex(parts)
 			for i := 0; i < 128; i++ {
 				line, err := parts.Sample(rnd)
@@ -226,11 +227,11 @@ func main() {
 	}
 
 	if *print {
-		generators := TrainingDataGenerator(rnd)
+		generators := dat.TrainingDataGenerator(rnd)
 		for _, generator := range generators {
 			fmt.Println(generator.Form)
 			if generator.Regex != nil {
-				parts := NewParts()
+				parts := dat.NewParts()
 				generator.Regex(parts)
 				for i := 0; i < 10; i++ {
 					fmt.Println(parts.Sample(rnd))
@@ -242,10 +243,10 @@ func main() {
 	}
 
 	if *parts {
-		generators, count, attempts, nomatch := TrainingDataGenerator(rnd), 0, 0, 0
+		generators, count, attempts, nomatch := dat.TrainingDataGenerator(rnd), 0, 0, 0
 		for _, generator := range generators {
 			if generator.Regex != nil {
-				parts := NewParts()
+				parts := dat.NewParts()
 				generator.Regex(parts)
 				exp, err := parts.Regex()
 				if err == nil {
